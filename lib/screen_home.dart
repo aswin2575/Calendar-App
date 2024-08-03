@@ -17,10 +17,10 @@ class ScreenHome extends StatefulWidget {
 
 class _ScreenHomeState extends State<ScreenHome> {
   var _currentPageIndex = 0;
-  final _pages = const [
+  final _pages = [
     ScreenFeeds(),
-    ScreenEvents(),
-    ScreenChannels()
+    const ScreenEvents(),
+    const ScreenChannels()
   ];
   final pageController = PageController(initialPage: 0);
 
@@ -56,13 +56,13 @@ class _ScreenHomeState extends State<ScreenHome> {
                           //backgroundImage: NetworkImage('https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1721577515~exp=1721581115~hmac=85c0c9ad76d5eed77a7cfb720b142a6969d87df5088a60b812503d560134b8a6&w=740'),
                           child: ClipOval(
                             child: FadeInImage.assetNetwork(
-                              placeholder: '/calendar_app/lib/images/aswin.png', // Local image
+                              placeholder: 'lib/images/aswin.png', // Local image
                               image: 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1721577515~exp=1721581115~hmac=85c0c9ad76d5eed77a7cfb720b142a6969d87df5088a60b812503d560134b8a6&w=740', // Network image
                               fit: BoxFit.cover,
                               imageErrorBuilder: (context, error, stackTrace) {
                                 // Display the local image if network image fails
                                 return Image.asset(
-                                  '/calendar_app/lib/images/aswin.png',
+                                  'lib/images/aswin.png',
                                   fit: BoxFit.cover,
                                 );
                               },
