@@ -2,6 +2,10 @@ library server;
 
 import 'dart:math';
 
+import 'package:firebase_core/firebase_core.dart';
+
+import '../firebase_options.dart';
+
 part 'channel.dart';
 part 'user.dart';
 part 'event.dart';
@@ -15,16 +19,16 @@ class Server {
 
   Server._();
 
-  Future<bool> initialize() async {
-    _currentUser = await AuthenticatedUser.instance;
-    return true;
+  static Future<void> initialize() async {
+    if (_instance != null) return;
+    _instance = Server._();
+    await Firebase.initializeApp( options: DefaultFirebaseOptions.currentPlatform, );
+    _instance!._currentUser = await AuthenticatedUser.instance;
+    _instance!._initialized = true;
   }
 
   static Server? _instance;
-  static Server get instance {
-    _instance ??= Server._();
-    return _instance!;
-  }
+  static Server? get instance { return _instance; }
 
   Future<List<Event>> getNewsFeeds() async {
     return List<Event>.generate(Random(5).nextInt(30), (index) {

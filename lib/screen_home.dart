@@ -17,16 +17,15 @@ class ScreenHome extends StatefulWidget {
 
 class _ScreenHomeState extends State<ScreenHome> {
   var _currentPageIndex = 0;
-  final _pages = [
+  final _pages = const [
     ScreenFeeds(),
-    const ScreenEvents(),
-    const ScreenChannels()
+    ScreenEvents(),
+    ScreenChannels()
   ];
   final pageController = PageController(initialPage: 0);
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 0,

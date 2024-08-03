@@ -1,17 +1,16 @@
 import 'package:calendar_app/event_card.dart';
-import 'package:calendar_app/global_data_holder.dart';
 import 'package:calendar_app/server/server.dart';
 import 'package:flutter/material.dart';
 
 class ScreenFeeds extends StatefulWidget {
-  ScreenFeeds({super.key});
+  const ScreenFeeds({super.key});
 
   @override
   State<ScreenFeeds> createState() => _ScreenFeedsState();
 }
 
 class _ScreenFeedsState extends State<ScreenFeeds> {
-  final server = Server.instance;
+  final server = Server.instance!;
 
   List<Event>? feeds;
 

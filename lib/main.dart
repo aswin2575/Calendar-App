@@ -7,7 +7,8 @@ import 'package:calendar_app/theme.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {
-  await Server.instance.initialize();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Server.initialize();
 
   runApp(const MyApp());
 }

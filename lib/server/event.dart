@@ -11,7 +11,6 @@ class Event {
   DateTime? dueDateTime;
 
   late final Channel? channel;
-  // Channel? get channel { return _channel; }
 
   final List<String> tags = List<String>.empty(growable: true);
   final List<Link> links = List<Link>.empty(growable: true);
@@ -19,7 +18,6 @@ class Event {
 
   Event( { required this.title, this.isInfo = false, this.description, this.location, this.scheduledDateTime, this.dueDateTime, this.imageUrl, this.channel } ) {
     id = DateTime.now().millisecondsSinceEpoch.toString();
-    channel?.events.add(this);
   }
 
   Event._fromMap(Map<String, Object> data) {
@@ -37,8 +35,6 @@ class Event {
   }
   
   Future<bool> delete() async {
-    channel?.events.remove(this);
-    
     throw UnimplementedError();
   }
 
