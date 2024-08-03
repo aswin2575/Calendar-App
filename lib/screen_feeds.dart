@@ -1,4 +1,5 @@
 import 'package:calendar_app/event_card.dart';
+import 'package:calendar_app/event_details.dart';
 import 'package:calendar_app/server/server.dart';
 import 'package:flutter/material.dart';
 
@@ -23,10 +24,33 @@ class _ScreenFeedsState extends State<ScreenFeeds> {
   Widget build(BuildContext context) {
     return Center(
       child: feeds == null? const Text('Loading Feeds'): ListView(
-        children: feeds!.map((event) => EventCard(
-          event: event,
-          showTime: false,
-          // actionButton: ,
+        children: feeds!.map((event) => GestureDetector(
+          child: EventCard(
+            event: event,
+            showTime: false,
+            actionButton: event.channel == null? OutlinedButton(onPressed: () {}, child: const Text('Remove')):
+              server.currentUser!.followingEvents.contains(event)? OutlinedButton(onPressed: () {}, child: const Text('Remove')):
+              FilledButton.tonal(onPressed: () {}, child: const Text('Follow')),
+          ),
+          onTap: () => showModalBottomSheet(
+              context: context,
+              useSafeArea: true,
+              showDragHandle: true,
+              isScrollControlled: true,
+              builder: (BuildContext context) {
+                return DraggableScrollableSheet(
+                  maxChildSize: 0.9,
+                  minChildSize: 0.2,
+                  expand: false,
+                  builder: (BuildContext context, ScrollController scrollController) {
+                    return SingleChildScrollView(
+                      controller: scrollController,
+                      child: EventDetails(event: event)
+                    );
+                  },
+                );
+              }
+          ),
         )).toList()
       )
     );

@@ -31,13 +31,14 @@ class Server {
   static Server? get instance { return _instance; }
 
   Future<List<Event>> getNewsFeeds() async {
-    return List<Event>.generate(Random(5).nextInt(30), (index) {
+    final random = Random(0);
+    return List<Event>.generate(random.nextInt(30), (index) {
       var event = Event(
           title: 'Event $index',
           description: 'Some description $index',
           location: 'ADP LAB',
-          scheduledDateTime: DateTime(2024, 8, 10, 9),
-          imageUrl: 'https://fisat.ac.in/wp-content/uploads/2023/04/Nautilus.jpeg',
+          scheduledDateTime: DateTime.now().add(Duration(days: random.nextInt(365), hours: random.nextInt(23))),
+          imageUrl: random.nextBool()? 'https://fisat.ac.in/wp-content/uploads/2023/04/Nautilus.jpeg': null,
       );
       event.tags.addAll([ 'Arts', 'Sports' ]);
       event.links.addAll([ Link('Register', 'https://www.google.com') ]);
