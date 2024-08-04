@@ -1,9 +1,9 @@
 import 'package:calendar_app/authen_check_page.dart';
+import 'package:calendar_app/screen_home.dart';
+import 'package:calendar_app/server/server.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-// import 'package:google_sign_in/google_sign_in.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_core/firebase_core.dart';
+
 class authenpage extends StatefulWidget {
   const authenpage({super.key});
 
@@ -12,9 +12,30 @@ class authenpage extends StatefulWidget {
 }
 
 class _authenpageState extends State<authenpage> {
+  bool loading = false;
+  late final Server server = Server.instance!;
+
+  @override
+  void initState() {
+    super.initState();
+    // Server.initialize().then((_) {
+    //   server=Server.instance!;
+    //   setState(() {
+    //     loading=false;
+    //   });
+    // });
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    // if(!loading && server.currentUser!=null){
+    //   Navigator.pushReplacement(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => ScreenHome()),
+    //   );
+    // }
+    int a=1;
     return Scaffold(
       body: SafeArea(child:
       Column(
@@ -24,7 +45,7 @@ class _authenpageState extends State<authenpage> {
           ),
           Center(
             child: CircleAvatar(
-              backgroundImage: AssetImage('/calendar_app/lib/images/images.jpeg'),
+              backgroundImage: AssetImage('lib/images/images.jpeg'),
               radius: 80.00,
             ),
           ),
@@ -41,77 +62,54 @@ class _authenpageState extends State<authenpage> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 24.0),
-            child: Container(
-                alignment: AlignmentDirectional.bottomEnd,
-                child: ElevatedButton(onPressed: (){
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> authencheck()));
-                }
-                // {_signInWithGoogle().then((user) {
-                //   if (user != null) {
-                //     Navigator.of(context).push(
-                //       MaterialPageRoute(
-                //         builder: (context) {
-                //           return LoggedInScreen(user: user);
-                //         },
-                //       ),
-                //     );
-                //   }
-                // });},
-                    ,child: Text('Sign in'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.secondaryContainer,
-                ))),
-          )
         ],
       )),
+      floatingActionButton: FilledButton.tonal(
+        onPressed: loading? null: () {
+          setState(() {
+            loading=true;
+          });
+          server.signIn().then((success){
+            setState(() {
+              loading=false;
+            });
+            if (success){
+              Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ScreenHome()),
+              );
+            }
+            else{
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Sign-In Failed'),
+                    content: Text("Couldn't find email\nPlease select email"),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                          // Perform additional actions if necessary
+                        },
+                        child: Text('OK'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
+          });
+        },
+        child: loading
+          ?SizedBox.square(
+            dimension: 20,
+            child: CircularProgressIndicator(
+            strokeWidth: 2.0,
+                    ),
+          )
+        :Text('Get Started'),
+      ),
     );
   }
 }
-// final FirebaseAuth _auth = FirebaseAuth.instance;
-// final GoogleSignIn _googleSignIn = GoogleSignIn();
-// Future<User?> _signInWithGoogle() async {
-//   final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-//   final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
-//
-//   final AuthCredential credential = GoogleAuthProvider.credential(
-//     accessToken: googleAuth.accessToken,
-//     idToken: googleAuth.idToken,
-//   );
-//
-//   final UserCredential userCredential = await _auth.signInWithCredential(credential);
-//   final User? user = userCredential.user;
-//
-//   print("signed in " + user!.displayName!);
-//   return user;
-// }
-// class LoggedInScreen extends StatelessWidget {
-//   final User user;
-//
-//   LoggedInScreen({required this.user});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Welcome'),
-//       ),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             CircleAvatar(
-//               backgroundImage: NetworkImage(user.photoURL ?? ''),
-//               radius: 50,
-//             ),
-//             SizedBox(height: 20),
-//             Text('Name: ${user.displayName}'),
-//             Text('Email: ${user.email}'),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-

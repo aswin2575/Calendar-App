@@ -1,11 +1,11 @@
 part of 'server.dart';
 
 class User {
-  late final String name, profile, email, id;
+  late final String name, photoUrl, email, id;
 
-  User._fromMap(Map<String, Object> data) {
+  User._fromMap(Map<String, dynamic> data) {
     name = data['name']! as String;
-    profile = data['profile']! as String;
+    photoUrl = data['photoUrl']! as String;
     email = data['email']! as String;
     id = data['id']! as String;
   }
@@ -19,10 +19,6 @@ class User {
 
     final instance = cache[id] = User._fromMap(data);
     return instance;
-  }
-
-  Future<bool> signOut() async {
-    throw UnimplementedError();
   }
 }
 
@@ -41,16 +37,15 @@ class AuthenticatedUser extends User {
   static AuthenticatedUser? _instance;
   static Future<AuthenticatedUser?> get instance async {
     if (_instance == null) {
-      final data = {
-        'id': '123456789',
-        'name': 'Ansif',
-        'email': 'ansifmshamsu7025@gmail.com',
-        'profile': 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1721577515~exp=1721581115~hmac=85c0c9ad76d5eed77a7cfb720b142a6969d87df5088a60b812503d560134b8a6&w=740',
-        'followingEvents': [],
-        'followingChannels': [],
-        'myEvents': [],
-        'myChannels': []
-      };
+      final userDetails = FirebaseAuth.instance.currentUser;
+      if (userDetails == null) return null;
+
+      final databaseRef = FirebaseFirestore.instance;
+      final collection = databaseRef.collection('Users');
+
+      final docRef = collection.doc(userDetails.uid);
+      final snapshot = await docRef.get();
+      final data = snapshot.data()!;
 
       _instance = AuthenticatedUser._fromMap(data);
       User.cache[_instance!.id] = _instance!;

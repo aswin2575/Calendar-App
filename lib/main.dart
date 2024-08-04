@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(colorScheme: MaterialTheme.lightScheme(), useMaterial3: true),
       darkTheme: ThemeData(colorScheme: MaterialTheme.darkScheme(), useMaterial3: true),
       //home: const ScreenHome(),
-      home: const authenpage(),
+      home: Server.instance!.currentUser == null? const authenpage(): const ScreenHome(),
       //home: const authencheck(),
     );
   }

@@ -15,7 +15,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "1002530083515-i2l7fsjrm50jeibapv8f7r10ljq4sg19.apps.googleusercontent.com",
+          "client_id": "1002530083515-p1nf7lalel12lqd5eo1pa8irdmeq6f9a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.asiet.calendar",
+            "certificate_hash": "40fbd8c624f3b76fbc9073bfc9ccda19b5fa5a3a"
+          }
+        },
+        {
+          "client_id": "1002530083515-r7guk83mjkc3j41dbtr7ah88310r7bg6.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -59,7 +67,7 @@
           }
         },
         {
-          "client_id": "1002530083515-i2l7fsjrm50jeibapv8f7r10ljq4sg19.apps.googleusercontent.com",
+          "client_id": "1002530083515-r7guk83mjkc3j41dbtr7ah88310r7bg6.apps.googleusercontent.com",
           "client_type": 3
         }
       ],

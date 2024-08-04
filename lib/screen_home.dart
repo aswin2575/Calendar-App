@@ -6,6 +6,7 @@ import 'package:calendar_app/profile_sheet.dart';
 import 'package:calendar_app/screen_channels.dart';
 import 'package:calendar_app/screen_events.dart';
 import 'package:calendar_app/screen_feeds.dart';
+import 'package:calendar_app/server/server.dart';
 import 'package:flutter/material.dart';
 
 class ScreenHome extends StatefulWidget {
@@ -23,6 +24,7 @@ class _ScreenHomeState extends State<ScreenHome> {
     ScreenChannels()
   ];
   final pageController = PageController(initialPage: 0);
+  final currentUser = Server.instance!.currentUser!;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +58,7 @@ class _ScreenHomeState extends State<ScreenHome> {
                           child: ClipOval(
                             child: FadeInImage.assetNetwork(
                               placeholder: 'lib/images/aswin.png', // Local image
-                              image: 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1721577515~exp=1721581115~hmac=85c0c9ad76d5eed77a7cfb720b142a6969d87df5088a60b812503d560134b8a6&w=740', // Network image
+                              image: currentUser.photoUrl, // Network image
                               fit: BoxFit.cover,
                               imageErrorBuilder: (context, error, stackTrace) {
                                 // Display the local image if network image fails
@@ -73,7 +75,18 @@ class _ScreenHomeState extends State<ScreenHome> {
                             context: context,
                             isScrollControlled: true,
                             builder: (BuildContext context) {
-                              return profilesheet();
+                              return DraggableScrollableSheet(
+                                expand: false,
+                                minChildSize: 0.2,
+                                maxChildSize: 0.95,
+                                initialChildSize: 0.6,
+                                builder: (BuildContext context, ScrollController scrollController) {
+                                  return SingleChildScrollView(
+                                    controller: scrollController,
+                                    child: ProfileSheet(),
+                                  );
+                                },
+                              );
 
                             },
                           );
