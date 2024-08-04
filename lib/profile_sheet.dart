@@ -150,7 +150,7 @@ class _profilesheetState extends State<profilesheet> {
           //
 
           ListTile(title: Container(
-            decoration: BoxDecoration(color: Colors.grey[850],
+            decoration: BoxDecoration(color: colorScheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(16)),
             padding: EdgeInsets.symmetric(vertical: 12,horizontal: 16),
             child: Row(

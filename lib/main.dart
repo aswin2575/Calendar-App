@@ -1,3 +1,6 @@
+
+import 'package:calendar_app/authen_check_page.dart';
+import 'package:calendar_app/authen_page.dart';
 import 'package:calendar_app/screen_home.dart';
 import 'package:calendar_app/theme.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +17,9 @@ class MyApp extends StatelessWidget {
       title: "Hello",
       theme: ThemeData(colorScheme: MaterialTheme.lightScheme(), useMaterial3: true),
       darkTheme: ThemeData(colorScheme: MaterialTheme.darkScheme(), useMaterial3: true),
-      home: const ScreenHome(),
+      //home: const ScreenHome(),
+      home: const authenpage(),
+      //home: const authencheck(),
     );
   }
 }
