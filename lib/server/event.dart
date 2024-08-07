@@ -64,7 +64,7 @@ class Event {
   Future<void> delete() async {
     final databaseRef = FirebaseFirestore.instance;
     final collection = databaseRef.collection('Events');
-    
+
     await collection.doc(id).delete();
   }
 
@@ -74,7 +74,7 @@ class Event {
 
     final databaseRef = FirebaseFirestore.instance;
     final collection = databaseRef.collection('Events');
-    
+
     final snapshot = await collection.doc(id).get();
     final data = snapshot.data()!;
 
