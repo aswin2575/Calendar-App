@@ -1,4 +1,4 @@
-import 'package:calendar_app/authen_page.dart';
+import 'package:calendar_app/auth_page.dart';
 import 'package:calendar_app/server/server.dart';
 import 'package:flutter/material.dart';
 
@@ -31,7 +31,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
               Server.instance!.signOut();
               Navigator.of(context).pop();
               Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => const authenpage()));
+                  MaterialPageRoute(builder: (context) => const AuthPage()));
             }, icon: Icon(Icons.logout)),
           ],
         ),
