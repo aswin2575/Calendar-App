@@ -1,6 +1,6 @@
 
 import 'package:calendar_app/authen_check_page.dart';
-import 'package:calendar_app/authen_page.dart';
+import 'package:calendar_app/auth_page.dart';
 import 'package:calendar_app/screen_home.dart';
 import 'package:calendar_app/server/server.dart';
 import 'package:calendar_app/theme.dart';
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(colorScheme: MaterialTheme.lightScheme(), useMaterial3: true),
       darkTheme: ThemeData(colorScheme: MaterialTheme.darkScheme(), useMaterial3: true),
       //home: const ScreenHome(),
-      home: Server.instance!.currentUser == null? const authenpage(): const ScreenHome(),
+      home: Server.instance!.currentUser == null? const AuthPage(): const ScreenHome(),
       //home: const authencheck(),
     );
   }

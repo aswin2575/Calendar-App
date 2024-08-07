@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:calendar_app/profile_sheet.dart';
+import 'package:calendar_app/screen_admin.dart';
 import 'package:calendar_app/screen_channels.dart';
 import 'package:calendar_app/screen_events.dart';
 import 'package:calendar_app/screen_feeds.dart';
@@ -18,10 +19,11 @@ class ScreenHome extends StatefulWidget {
 
 class _ScreenHomeState extends State<ScreenHome> {
   var _currentPageIndex = 0;
-  final _pages = const [
-    ScreenFeeds(),
-    ScreenEvents(),
-    ScreenChannels()
+  final _pages = [
+    const ScreenFeeds(),
+    const ScreenEvents(),
+    const ScreenChannels(),
+    if (Server.instance!.currentUser!.isAdmin) ScreenAdmin()
   ];
   final pageController = PageController(initialPage: 0);
   final currentUser = Server.instance!.currentUser!;
@@ -32,6 +34,7 @@ class _ScreenHomeState extends State<ScreenHome> {
       appBar: AppBar(
         toolbarHeight: 0,
       ),
+      floatingActionButton: (_currentPageIndex == 1 || (_currentPageIndex == 2 && Server.instance!.currentUser!.isAdmin)) ? FloatingActionButton(onPressed: () {}, child: Icon(Icons.add),): null,
       body: SafeArea(
         child: Column(
           children: [
@@ -46,11 +49,11 @@ class _ScreenHomeState extends State<ScreenHome> {
                     onChanged: (_) {
                       controller.openView();
                     },
-                    elevation: WidgetStatePropertyAll<double>(0),
-                    padding: WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 16, right: 8)),
+                    elevation: const WidgetStatePropertyAll<double>(0),
+                    padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 16, right: 8)),
                     controller: controller,
                     hintText: 'Search Events & Channels',
-                    leading: Icon(Icons.search),
+                    leading: const Icon(Icons.search),
                     trailing: [
                       GestureDetector(
                         child: CircleAvatar(
@@ -83,7 +86,7 @@ class _ScreenHomeState extends State<ScreenHome> {
                                 builder: (BuildContext context, ScrollController scrollController) {
                                   return SingleChildScrollView(
                                     controller: scrollController,
-                                    child: ProfileSheet(),
+                                    child: const ProfileSheet(),
                                   );
                                 },
                               );
@@ -114,11 +117,7 @@ class _ScreenHomeState extends State<ScreenHome> {
               child: PageView(
                 controller: pageController,
                 children: _pages,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPageIndex = index;
-                  });
-                },
+                onPageChanged: (index) => setState(() => _currentPageIndex = index),
               ),
             ),
           ],
@@ -132,10 +131,11 @@ class _ScreenHomeState extends State<ScreenHome> {
             pageController.animateToPage(index, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
           });
         },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.event), label: 'My Events'),
-          NavigationDestination(icon: Icon(Icons.groups), label: 'Channels')
+        destinations: [
+          const NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
+          const NavigationDestination(icon: Icon(Icons.event), label: 'My Events'),
+          const NavigationDestination(icon: Icon(Icons.groups), label: 'Channels'),
+          if (Server.instance!.currentUser!.isAdmin) const NavigationDestination(icon: Icon(Icons.admin_panel_settings), label: 'Admin Panel')
         ],
       ),
     );

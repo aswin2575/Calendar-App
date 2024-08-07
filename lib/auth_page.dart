@@ -4,14 +4,14 @@ import 'package:calendar_app/server/server.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class authenpage extends StatefulWidget {
-  const authenpage({super.key});
+class AuthPage extends StatefulWidget {
+  const AuthPage({super.key});
 
   @override
-  State<authenpage> createState() => _authenpageState();
+  State<AuthPage> createState() => _AuthPageState();
 }
 
-class _authenpageState extends State<authenpage> {
+class _AuthPageState extends State<AuthPage> {
   bool loading = false;
   late final Server server = Server.instance!;
 
@@ -69,7 +69,7 @@ class _authenpageState extends State<authenpage> {
           setState(() {
             loading=true;
           });
-          server.signIn().then((success){
+          server.signIn(context).then((success){
             setState(() {
               loading=false;
             });

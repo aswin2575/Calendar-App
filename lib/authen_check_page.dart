@@ -1,7 +1,12 @@
 import 'package:calendar_app/screen_home.dart';
 import 'package:flutter/material.dart';
+
+import 'server/server.dart';
+
 class authencheck extends StatefulWidget {
-  const authencheck({super.key});
+  final AuthenticatedUser? currentUser;
+
+  const authencheck({super.key, this.currentUser});
 
   @override
   State<authencheck> createState() => _authencheckState();
