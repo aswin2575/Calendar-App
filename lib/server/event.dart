@@ -4,11 +4,12 @@ class Event {
   late final String id;
   late bool isInfo;
   late String title;
-  String? description;
-  String? imageUrl;
-  String? location;
-  DateTime? scheduledDateTime;
-  DateTime? dueDateTime;
+  late String? description;
+  late String? imageUrl;
+  late String? location;
+  late DateTime? scheduledDateTime;
+  late ActionLink? actionLink;
+  late bool allDayEvent;
 
   late final Channel? channel;
 
@@ -16,10 +17,8 @@ class Event {
   final List<Link> links = List<Link>.empty(growable: true);
   final List<Contact> contacts = List<Contact>.empty(growable: true);
 
-  Event( { required this.title, this.isInfo = false, this.description, this.location, this.scheduledDateTime, this.dueDateTime, this.imageUrl, this.channel } ) {
-    id = DateTime.now().millisecondsSinceEpoch.toString();
-    
-    commit();
+  Event( { required this.title, this.isInfo = false, this.description, this.location, this.scheduledDateTime, this.imageUrl, this.channel, this.actionLink, this.allDayEvent = true, String? id } ) {
+    this.id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
   }
 
   Future<void> commit() async {
@@ -33,8 +32,13 @@ class Event {
       if (description != null) 'description': description!,
       if (location != null) 'location': location!,
       if (imageUrl != null) 'imageUrl': imageUrl!,
-      if (scheduledDateTime != null) 'scheduledDateTime': scheduledDateTime!,
-      if (dueDateTime != null) 'dueDateTime': dueDateTime!,
+      if (scheduledDateTime != null) 'scheduledDateTime': scheduledDateTime!.millisecondsSinceEpoch,
+      if (actionLink != null) 'actionLink': {
+        'title': actionLink!.title,
+        'uri': actionLink!.uri,
+        if (actionLink!.due != null) 'due': actionLink!.due!.millisecondsSinceEpoch
+      },
+      'allDayEvent': allDayEvent,
       'tags': tags,
       'links': links.map((link) => { 'title': link.title, 'uri': link.uri }).toList(),
       'contacts': contacts.map((contact) => { 'name': contact.name, 'phone': contact.phone }).toList(),
@@ -46,14 +50,15 @@ class Event {
     title = data['title'] as String;
     id = data['id'] as String;
     isInfo = data['isInfo'] as bool;
-    if (data.containsKey('description')) description = data['description'] as String;
-    if (data.containsKey('imageUrl')) imageUrl = data['imageUrl'] as String;
-    if (data.containsKey('location')) location = data['location'] as String;
-    if (data.containsKey('scheduledDateTime')) scheduledDateTime = DateTime.fromMillisecondsSinceEpoch(data['scheduledDateTime'] as int);
-    if (data.containsKey('dueDateTime')) dueDateTime = DateTime.fromMillisecondsSinceEpoch(data['dueDateTime'] as int);
-    if (data.containsKey('tags')) tags.addAll(data['tags'] as List<String>);
-    if (data.containsKey('links')) links.addAll((data['links'] as List<Map<String, String>>).map((e) => Link(e['title']!, e['uri']!)));
-    if (data.containsKey('contacts')) contacts.addAll((data['contacts'] as List<Map<String, String>>).map((e) => Contact(e['name']!, e['phone']!)));
+    allDayEvent = data['allDayEvent'] as bool;
+    description = data.containsKey('description')? data['description'] as String: null;
+    imageUrl = data.containsKey('imageUrl')? data['imageUrl'] as String: null;
+    location = data.containsKey('location')? data['location'] as String: null;
+    scheduledDateTime = data.containsKey('scheduledDateTime')? DateTime.fromMillisecondsSinceEpoch(data['scheduledDateTime'] as int): null;
+    actionLink = data.containsKey('actionLink')? ActionLink._fromMap(data['actionLink']!): null;
+    if (data.containsKey('tags')) tags.addAll((data['tags'] as List<dynamic>).map((e) => e as String));
+    if (data.containsKey('links')) links.addAll((data['links'] as List<dynamic>).map((e) => Link(title: e['title']!, uri: e['uri']!)));
+    if (data.containsKey('contacts')) contacts.addAll((data['contacts'] as List<dynamic>).map((e) => Contact(name: e['name']!, phone: e['phone']!)));
   }
   
   Future<void> delete() async {
@@ -74,21 +79,31 @@ class Event {
     final data = snapshot.data()!;
 
     final instance = _cache[id] = Event._fromMap(data);
-    if (data.containsKey('channel')) instance.channel = await Channel.load(data['channel']! as String);
+    instance.channel = data.containsKey('channel')? await Channel.load(data['channel']! as String): null;
     return instance;
   }
 }
 
 class Link {
-  String title;
-  String uri;
+  late String title;
+  late String uri;
 
-  Link(this.title, this.uri);
+  Link({ required this.title, required this.uri });
 }
 
 class Contact {
-  String name;
-  String phone;
+  late String name;
+  late String phone;
 
-  Contact(this.name, this.phone);
+  Contact({ required this.name, required this.phone });
+}
+
+class ActionLink extends Link {
+  late DateTime? due;
+
+  ActionLink({required super.title, required super.uri, this.due});
+
+  ActionLink._fromMap(Map<String, dynamic> data): super(title: data['title']! as String, uri: data['uri']! as String) {
+    due = data.containsKey('due')? DateTime.fromMillisecondsSinceEpoch(data['due']! as int): null;
+  }
 }

@@ -2,11 +2,12 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:calendar_app/event_edit_sheet.dart';
 import 'package:calendar_app/profile_sheet.dart';
-import 'package:calendar_app/screen_admin.dart';
-import 'package:calendar_app/screen_channels.dart';
-import 'package:calendar_app/screen_events.dart';
-import 'package:calendar_app/screen_feeds.dart';
+import 'package:calendar_app/screen_home_admin.dart';
+import 'package:calendar_app/screen_home_channels.dart';
+import 'package:calendar_app/screen_home_events.dart';
+import 'package:calendar_app/screen_home_feeds.dart';
 import 'package:calendar_app/server/server.dart';
 import 'package:flutter/material.dart';
 
@@ -34,7 +35,31 @@ class _ScreenHomeState extends State<ScreenHome> {
       appBar: AppBar(
         toolbarHeight: 0,
       ),
-      floatingActionButton: (_currentPageIndex == 1 || (_currentPageIndex == 2 && Server.instance!.currentUser!.isAdmin)) ? FloatingActionButton(onPressed: () {}, child: Icon(Icons.add),): null,
+      floatingActionButton: (_currentPageIndex == 1 || (_currentPageIndex == 2 && Server.instance!.currentUser!.isAdmin)) ? FloatingActionButton(onPressed: () {
+        if (_currentPageIndex == 1) {
+          showModalBottomSheet<Event>(
+            context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            builder: (context) => DraggableScrollableSheet(
+              expand: false,
+              minChildSize: 0.2,
+              initialChildSize: 0.6,
+              builder: (context, scrollController) => SingleChildScrollView(
+                  controller: scrollController,
+                  child: EventEditSheet(),
+                ),
+              )
+          ).then((event) {
+            setState(() {
+              if (event != null) {
+                currentUser.myEvents.add(event);
+                currentUser.commit();
+              }
+            });
+          });
+        }
+      }, child: Icon(Icons.add),): null,
       body: SafeArea(
         child: Column(
           children: [
@@ -43,12 +68,8 @@ class _ScreenHomeState extends State<ScreenHome> {
               child: SearchAnchor(
                 builder: (BuildContext context, SearchController controller) {
                   return SearchBar(
-                    onTap: () {
-                      controller.openView();
-                    },
-                    onChanged: (_) {
-                      controller.openView();
-                    },
+                    onTap: () => controller.openView(),
+                    onChanged: (_) => controller.openView(),
                     elevation: const WidgetStatePropertyAll<double>(0),
                     padding: const WidgetStatePropertyAll<EdgeInsets>(EdgeInsets.only(left: 16, right: 8)),
                     controller: controller,

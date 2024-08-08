@@ -107,12 +107,18 @@ class Server {
         'description': 'Some description $index',
         'location': 'ADP LAB',
         'scheduledDateTime': DateTime.now().add(Duration(days: random.nextInt(365), hours: random.nextInt(23))).millisecondsSinceEpoch,
+        'actionLink': {
+          'title': 'Register',
+          'uri': 'https://www.google.com',
+          'due': DateTime.now().add(Duration(days: random.nextInt(365), hours: random.nextInt(23))).millisecondsSinceEpoch
+        },
+        'allDayEvent': false,
         if (random.nextBool()) 'imageUrl':'https://fisat.ac.in/wp-content/uploads/2023/04/Nautilus.jpeg',
       });
       event.channel = null;
       event.tags.addAll([ 'Arts', 'Sports' ]);
-      event.links.addAll([ Link('Register', 'https://www.google.com') ]);
-      event.contacts.addAll([ Contact('Ansif', '7025694703') ]);
+      event.links.addAll([ Link(title: 'Google', uri: 'https://www.google.com') ]);
+      event.contacts.addAll([ Contact(name: 'Ansif', phone: '7025694703') ]);
       return event;
     });
   }
