@@ -117,7 +117,21 @@ class AuthenticatedUser extends User {
   AuthenticatedUser._fromMap(super.data): super._fromMap();
 
   void commit() async {
-    throw UnimplementedError();
+    final databaseRef = FirebaseFirestore.instance;
+    final collection = databaseRef.collection('Users');
+
+    await collection.doc(id).set({
+      'name': name,
+      'id': id,
+      'photoUrl': photoUrl,
+      'email': email,
+      if (department != null) 'department': department!.code,
+      if (admissionYear != null) 'admissionYear': admissionYear!.millisecondsSinceEpoch,
+      'myEvents': myEvents.map((event) => event.id).toList(),
+      'followingEvents': followingEvents.map((event) => event.id).toList(),
+      'myChannels': myChannels.map((channel) => channel.id).toList(),
+      'followingChannels': followingChannels.map((channel) => channel.id).toList(),
+    });
   }
 
   static AuthenticatedUser? _instance;
