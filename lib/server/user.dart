@@ -131,6 +131,7 @@ class AuthenticatedUser extends User {
       'followingEvents': followingEvents.map((event) => event.id).toList(),
       'myChannels': myChannels.map((channel) => channel.id).toList(),
       'followingChannels': followingChannels.map((channel) => channel.id).toList(),
+      'isAdmin': isAdmin
     });
   }
 
