@@ -15,31 +15,47 @@ class _ProfileSheetState extends State<ProfileSheet> {
   var editable=false;
   int? selectedIndex;
   final currentUser = Server.instance!.currentUser!;
+  bool light=true;
+  final ValueNotifier<int> _selectedValueNotifier = ValueNotifier<int>(1);
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final List<ThemeData> _themes = [
+    ThemeData.light(),
+    ThemeData.dark()];
+    //bool? _checked=false;
+    int tempSelectedValue = _selectedValueNotifier.value;
     var widgets = lst.map((item) { return Text(item); } );
     return Column(
       //mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+        SizedBox(height: 30,),
+        Stack(
           children: [
-            IconButton(onPressed: (){
-              Server.instance!.signOut();
-              Navigator.of(context).pop();
-              Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => const authenpage()));
-            }, icon: Icon(Icons.logout)),
-          ],
-        ),
         Center(
           child: CircleAvatar(
             radius:70.0,
             backgroundImage: NetworkImage(currentUser.photoUrl),
           ),
+        ),
+        Positioned(
+          //top: 20,
+          right: 15,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(onPressed: (){
+                Server.instance!.signOut();
+                Navigator.of(context).pop();
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const authenpage()));
+              }, icon: Icon(Icons.logout)),
+            ],
+          ),
+        ),
+        ],
         ),
         SizedBox(
           height: 20,
@@ -75,90 +91,91 @@ class _ProfileSheetState extends State<ProfileSheet> {
           decoration: editable? BoxDecoration(
             color: colorScheme.surfaceContainerHigh
           ): null,
-          child: Stack(
-            alignment: AlignmentDirectional.topEnd,
+          child: Column(
+            //mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (editable) IconButton(
-                icon: Icon(Icons.clear),
-                onPressed: () {
-                  setState(() {
-                    editable = false;
-                  });
-                },
-              ),
-              Column(
-                //mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
-                  Text('Interests',style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-
-                  Center(
-                    child: Wrap(
-                      // mainAxisAlignment: MainAxisAlignment.center,
-                      // crossAxisAlignment: WrapCrossAlignment.end,
-                        alignment: WrapAlignment.center,
-                        spacing: 4,
-                        children: List<Widget>.generate(
-                            inputs,
-                                (index) {
-                              return editable? InputChip(
-                                label: Text('Person ${index + 1}'),
-                                backgroundColor: colorScheme.surfaceContainerHigh,
-                                onSelected: (bool selected) {
-                                  setState(() {
-                                    if (selectedIndex == index) {
-                                      selectedIndex = null;
-                                    } else {
-                                      selectedIndex = index;
-                                    }
-                                  });
-                                },
-                                onDeleted: () {
-                                  setState(() {
-                                    inputs = inputs - 1;
-                                  });
-                                },
-                              ): Chip(
-                                  label: Text('Item $index'),
-                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 0)
-                              );
-                            }
-                        ) + [
-                          if (!editable) IconButton(onPressed: () {
-                            setState(() {
-                              editable = true;
-                            });
-                          }, icon: Icon(Icons.edit))
-                        ]
+                  Expanded(
+                    child: Text('Interests',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),
                     ),
                   ),
-                  if (editable) Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Add Interest'
-                          ),
-                        ),
-                      ),
-                      IconButton(onPressed: () {
-                        setState(() {
-                          inputs += 1;
-                        });
-                      }, icon: Icon(Icons.done))
-                    ],
-                  )
+                  if (editable) IconButton(
+                    icon: Icon(Icons.clear),
+                    onPressed: () {
+                      setState(() {
+                        editable = false;
+                      });
+                    },
+                  ),
                 ],
               ),
-            ]
+
+              Center(
+                child: Wrap(
+                  // mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: WrapCrossAlignment.end,
+                    alignment: WrapAlignment.center,
+                    spacing: 4,
+                    children: List<Widget>.generate(
+                        inputs,
+                            (index) {
+                          return editable? InputChip(
+                            label: Text('Person ${index + 1}'),
+                            backgroundColor: colorScheme.surfaceContainerHigh,
+                            onSelected: (bool selected) {
+                              setState(() {
+                                if (selectedIndex == index) {
+                                  selectedIndex = null;
+                                } else {
+                                  selectedIndex = index;
+                                }
+                              });
+                            },
+                            onDeleted: () {
+                              setState(() {
+                                inputs = inputs - 1;
+                              });
+                            },
+                          ): Chip(
+                              label: Text('Item $index'),
+                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 0)
+                          );
+                        }
+                    ) + [
+                      if (!editable) IconButton(onPressed: () {
+                        setState(() {
+                          editable = true;
+                        });
+                      }, icon: Icon(Icons.edit))
+                    ]
+                ),
+              ),
+              if (editable) Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Add Interest'
+                      ),
+                    ),
+                  ),
+                  IconButton(onPressed: () {
+                    setState(() {
+                      inputs += 1;
+                    });
+                  }, icon: Icon(Icons.add))
+                ],
+              )
+            ],
           ),
         ),
         //
 
         ListTile(title: Container(
-          decoration: BoxDecoration(color: colorScheme.secondaryContainer,
+          decoration: BoxDecoration(color: colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(16)),
           padding: EdgeInsets.symmetric(vertical: 12,horizontal: 16),
           child: Row(
@@ -181,8 +198,84 @@ class _ProfileSheetState extends State<ProfileSheet> {
             ],
           ),
         ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
+          child: Text('Settings',
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20),),
+        ),
+        // ListTile(
+        //   leading: Text('Dark Theme',style: TextStyle(fontSize: 20),),
+        //   trailing: Switch(
+        //     value: light,
+        //     onChanged:(bool value){
+        //       setState(() {
+        //         light=value;
+        //       });
+        //     } ,),
+        // ),
+        ListTile(
+          leading: Text('Theme',style: TextStyle(fontSize: 16),),
+          onTap: () {
+            tempSelectedValue=_selectedValueNotifier.value;
+            showDialog<String>(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              title: const Text('Theme'),
+              content: ValueListenableBuilder<int>(
+                valueListenable: _selectedValueNotifier,
+                  builder: (context,selectedValue, child){
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RadioListTile<int>(
+                        value: 1,
+                        groupValue: selectedValue,
+                        title: Text('Light'),
+                        onChanged: (int? value) {
+                          _selectedValueNotifier.value = value!;
+                        },
+                      ),
+                      RadioListTile<int>(
+                        value: 2,
+                        groupValue: selectedValue,
+                        title: Text('Dark'),
+                        onChanged: (int? value) {
+                          _selectedValueNotifier.value = value!;
+                        },
+                      ),
+                    ],
+                  );
+                  }
+              ),
+              actions: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed:(){
+                        _selectedValueNotifier.value=tempSelectedValue;
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: (){
+                        Navigator.of(context).pop();
+
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ],
+                )
+
+              ],
+            ),
+          );},
         )
-        ,],
+      ],
     );;
   }
 }

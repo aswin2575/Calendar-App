@@ -85,7 +85,7 @@ class _authenpageState extends State<authenpage> {
                 builder: (BuildContext context) {
                   return AlertDialog(
                     title: Text('Sign-In Failed'),
-                    content: Text("Couldn't find email\nPlease select email"),
+                    content: Text("We were unable to sign you in with Google. Please check your internet connection and try again. If the problem persists, contact support.",textAlign: TextAlign.justify,),
                     actions: <Widget>[
                       TextButton(
                         onPressed: () {
