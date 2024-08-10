@@ -50,7 +50,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
                 Server.instance!.signOut();
                 Navigator.of(context).pop();
                 Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const authenpage()));
+                    MaterialPageRoute(builder: (context) => const AuthPage()));
               }, icon: Icon(Icons.logout)),
             ],
           ),

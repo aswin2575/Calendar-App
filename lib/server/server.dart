@@ -69,6 +69,7 @@ class Server {
       final snapshot = await collection.count().get();
       final userCount = snapshot.count;
       if (userCount == 0) userData['isAdmin'] = true;
+      else userData['isAdmin'] = false;
       collection.doc(userDetails.uid).set(userData);
     }
     _currentUser = await AuthenticatedUser.instance;
