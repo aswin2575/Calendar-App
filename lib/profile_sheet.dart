@@ -21,6 +21,7 @@ class _ProfileSheetState extends State<ProfileSheet> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    //final v= ThemeType.values[0];
     final List<ThemeData> _themes = [
     ThemeData.light(),
     ThemeData.dark()];
@@ -174,30 +175,32 @@ class _ProfileSheetState extends State<ProfileSheet> {
         ),
         //
 
-        ListTile(title: Container(
-          decoration: BoxDecoration(color: colorScheme.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(16)),
-          padding: EdgeInsets.symmetric(vertical: 12,horizontal: 16),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            //mainAxisAlignment: MainAxisAlignment.center,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 4),
+          child: Container(
+            child: Card.filled(
+              child: ListTile(title: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  //mainAxisAlignment: MainAxisAlignment.center,
 
-            children: [
-              // SizedBox(width: 20,),
-              Column(crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [SizedBox(width: 150,),
-                  Text('Department\nSemester\nAdmission',style: TextStyle(fontWeight: FontWeight.bold),),
-                ],),
-              Column(crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text('CSE\nS6\n21BCS080'),
-                ],),
-              // SizedBox(width: 20,),
-            ],
+                  children: [
+                    // SizedBox(width: 20,),
+                    Column(crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [SizedBox(width: 150,),
+                        Text('Department\nSemester\nAdmission',style: TextStyle(fontWeight: FontWeight.bold),),
+                      ],),
+                    Column(crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text('CSE\nS6\n21BCS080'),
+                      ],),
+                    // SizedBox(width: 20,),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
@@ -216,66 +219,87 @@ class _ProfileSheetState extends State<ProfileSheet> {
         //       });
         //     } ,),
         // ),
-        ListTile(
-          leading: Text('Theme',style: TextStyle(fontSize: 16),),
-          onTap: () {
-            tempSelectedValue=_selectedValueNotifier.value;
-            showDialog<String>(
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-              title: const Text('Theme'),
-              content: ValueListenableBuilder<int>(
-                valueListenable: _selectedValueNotifier,
-                  builder: (context,selectedValue, child){
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      RadioListTile<int>(
-                        value: 1,
-                        groupValue: selectedValue,
-                        title: Text('Light'),
-                        onChanged: (int? value) {
-                          _selectedValueNotifier.value = value!;
-                        },
-                      ),
-                      RadioListTile<int>(
-                        value: 2,
-                        groupValue: selectedValue,
-                        title: Text('Dark'),
-                        onChanged: (int? value) {
-                          _selectedValueNotifier.value = value!;
-                        },
-                      ),
-                    ],
-                  );
-                  }
-              ),
-              actions: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed:(){
-                        _selectedValueNotifier.value=tempSelectedValue;
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: (){
-                        Navigator.of(context).pop();
-
-                      },
-                      child: const Text('OK'),
-                    ),
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 16,vertical: 4),
+          child: Card.filled(
+            clipBehavior: Clip.hardEdge,
+            child: ListTile(
+              leading: Icon(Icons.contrast),
+              title: Text('Theme',style: TextStyle(fontSize: 16),),
+              onTap: () {
+                tempSelectedValue=_selectedValueNotifier.value;
+                showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                  title: const Text('Theme'),
+                  content: ValueListenableBuilder<int>(
+                    valueListenable: _selectedValueNotifier,
+                      builder: (context,selectedValue, child){
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          RadioListTile<int>(
+                            value: 1,
+                            groupValue: selectedValue,
+                            title: Text('Light'),
+                            onChanged: (int? value) {
+                              _selectedValueNotifier.value = value!;
+                            },
+                          ),
+                          RadioListTile<int>(
+                            value: 2,
+                            groupValue: selectedValue,
+                            title: Text('Dark'),
+                            onChanged: (int? value) {
+                              _selectedValueNotifier.value = value!;
+                            },
+                          ),
+                        ],
+                      );
+                      }
+                  ),
+                  actions: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed:(){
+                            _selectedValueNotifier.value=tempSelectedValue;
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: (){
+                            Navigator.of(context).pop();
+            
+                          },
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    )
+            
                   ],
-                )
-
-              ],
+                ),
+              );},
             ),
-          );},
+          ),
         )
       ],
     );;
+  }
+}
+
+class ThemeTypeSelector extends StatefulWidget {
+  const ThemeTypeSelector({super.key});
+
+  @override
+  State<ThemeTypeSelector> createState() => _ThemeTypeSelectorState();
+}
+
+class _ThemeTypeSelectorState extends State<ThemeTypeSelector> {
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
   }
 }
