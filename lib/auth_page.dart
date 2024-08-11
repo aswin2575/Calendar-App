@@ -69,17 +69,19 @@ class _AuthPageState extends State<AuthPage> {
           setState(() {
             loading=true;
           });
-          server.signIn(context).then((success){
-            setState(() {
-              loading=false;
-            });
+          server.signIn(
+            context: context,
+            signupBuilder: (context, user) => Scaffold(body: GestureDetector(child: Center(child: Text('Hey ${user.name}')), onTap: () => Navigator.of(context).pop(true),)),
+            signupErrorBuilder: (context) => Scaffold(body: const Center(child: Text('Oops you are unauthorized')))
+          ).then((success){
+            setState(() => loading=false);
+
             if (success){
               Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => ScreenHome()),
+                context,
+                MaterialPageRoute(builder: (context) => ScreenHome()),
               );
-            }
-            else{
+            } else {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
@@ -105,8 +107,8 @@ class _AuthPageState extends State<AuthPage> {
           ?SizedBox.square(
             dimension: 20,
             child: CircularProgressIndicator(
-            strokeWidth: 2.0,
-                    ),
+              strokeWidth: 2.0,
+            ),
           )
         :Text('Get Started'),
       ),

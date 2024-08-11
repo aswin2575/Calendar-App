@@ -18,6 +18,7 @@ class EventEditSheet extends StatefulWidget {
 
 class EventEditSheetState extends State<EventEditSheet> {
   bool loading = false;
+  bool savable = false;
   late final titleController = TextEditingController(text: widget.event?.title);
   late final locationController = TextEditingController(text: widget.event?.location);
   late final descriptionController = TextEditingController(text: widget.event?.description);
@@ -29,10 +30,22 @@ class EventEditSheetState extends State<EventEditSheet> {
   late final id = widget.event?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
 
   @override
+  void initState() {
+    super.initState();
+
+    titleController.addListener(() {
+      if (titleController.text.isNotEmpty != savable) {
+        setState(() => savable = titleController.text.isNotEmpty );
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.topLeft,
-      margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom+32),
+      margin: const EdgeInsets.only(bottom: 32),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -244,25 +257,28 @@ class EventEditSheetState extends State<EventEditSheet> {
           Container(
             alignment: Alignment.bottomRight,
             padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: FilledButton.tonal(onPressed: () {
-              if (widget.event == null) {
-                final random = Random(5);
-                final event = Event(
-                  id: id,
-                  title: titleController.text,
-                  description: descriptionController.text,
-                  location: locationController.text,
-                  imageUrl: imageviewController.imageUrl,
-                  scheduledDateTime: DateTime.now().add(Duration(days: random.nextInt(365), hours: random.nextInt(23))),
-                  allDayEvent: true,
-                );
-                event.tags.addAll(tags);
-                event.links.addAll(links);
-                event.contacts.addAll(contacts);
-                event.commit();
-                Navigator.of(context).pop(event);
-              }
-            }, child: const Text("Save")),
+            child: FilledButton.tonal(
+              onPressed: titleController.text.isEmpty? null: () {
+                if (widget.event == null) {
+                  final random = Random(5);
+                  final event = Event(
+                    id: id,
+                    title: titleController.text,
+                    description: descriptionController.text,
+                    location: locationController.text,
+                    imageUrl: imageviewController.imageUrl,
+                    scheduledDateTime: DateTime.now().add(Duration(days: random.nextInt(365), hours: random.nextInt(23))),
+                    allDayEvent: true,
+                  );
+                  event.tags.addAll(tags);
+                  event.links.addAll(links);
+                  event.contacts.addAll(contacts);
+                  event.commit();
+                  Navigator.of(context).pop(event);
+                }
+              },
+              child: const Text("Save"),
+            ),
           )
         ],
       ),

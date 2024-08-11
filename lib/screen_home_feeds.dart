@@ -17,13 +17,14 @@ class _ScreenFeedsState extends State<ScreenFeeds> {
 
   @override
   void initState() {
+    super.initState();
     server.getNewsFeeds().then((feeds) => setState(() => this.feeds = feeds));
   }
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: feeds == null? const Text('Loading Feeds'): ListView(
+      child: feeds == null? const Text('Loading Feeds'): feeds!.isEmpty? const Text('No Feeds Available'): ListView(
         children: feeds!.map((event) => GestureDetector(
           child: EventCard(
             event: event,

@@ -23,6 +23,8 @@ class Department {
     'AI': 'Artificial Intelligence and Data Science',
   };
 
+  static List<String> get codes => _departmentNames.keys.toList();
+
   Department({ name, required this.code }): name = name ?? _departmentNames.containsKey(code)? _departmentNames[code]!: 'Untitled Department';
 
   static Department get CE => Department(name: 'Civil Engineering', code: 'CE');
@@ -67,20 +69,23 @@ class Semester {
 class User {
   late String name, photoUrl, email, id;
   late Department? department;
-  DateTime? get admissionYear => _admissionYear;
-  set admissionYear(DateTime? value) {
+  int? get admissionYear => _admissionYear;
+  set admissionYear(int? value) {
     _admissionYear = value;
     if (value == null) return;
     final now = DateTime.now();
-    final year = now.year - value.year;
+    final currentYear = now.year;
+    final year = currentYear - value;
     final oddSem = now.month > 6;
     _semester = Semester._(oddSem? year*2+1: (year+1)*2);
   }
   Semester? get semester => _semester;
   late bool isAdmin;
 
-  late DateTime? _admissionYear;
+  late int? _admissionYear;
   Semester? _semester;
+
+  static final collection = FirebaseFirestore.instance.collection('Users');
 
   User._fromMap(Map<String, dynamic> data) {
     name = data['name']! as String;
@@ -89,22 +94,34 @@ class User {
     id = data['id']! as String;
     isAdmin = data['isAdmin']! as bool;
     department = data.containsKey('department')? Department(code: data['department']): null;
-    admissionYear = data.containsKey('admissionYear')? DateTime.fromMillisecondsSinceEpoch(data['admissionYear']): null;
+    admissionYear = data.containsKey('admissionYear')? data['admissionYear']: null;
   }
 
-  static Map<String, User> cache = {};
-  static Future<User> load(String id) async {
-    if (cache.containsKey(id)) return cache[id]!;
+  static final Map<String, User> _cache = {};
+  static Future<User?> load(String id) async {
+    if (_cache.containsKey(id)) return _cache[id]!;
 
-    final databaseRef = FirebaseFirestore.instance;
-    final collection = databaseRef.collection('Users');
+    final snapshot = await collection.doc(id).get();
+    if (!snapshot.exists) return null;
 
-    final docRef = collection.doc(id);
-    final snapshot = await docRef.get();
     final data = snapshot.data()!;
-
-    final instance = cache[id] = User._fromMap(data);
+    final instance = _cache[id] = User._fromMap(data);
     return instance;
+  }
+
+  static Future<List<User>> loadMultiple(Query<Map<String, dynamic>>? query) async {
+    final snapshots = await query?.get() ?? await collection.get();
+    final results = snapshots.docs.map((snapshot) async {
+      final data = snapshot.data();
+      final id = data['id']!;
+
+      if (_cache.containsKey(id)) return _cache[id]!;
+
+      final instance = _cache[id] = User._fromMap(data);
+      return instance;
+    });
+
+    return await Future.wait(results);
   }
 }
 
@@ -117,16 +134,13 @@ class AuthenticatedUser extends User {
   AuthenticatedUser._fromMap(super.data): super._fromMap();
 
   void commit() async {
-    final databaseRef = FirebaseFirestore.instance;
-    final collection = databaseRef.collection('Users');
-
-    await collection.doc(id).set({
+    await User.collection.doc(id).set({
       'name': name,
       'id': id,
       'photoUrl': photoUrl,
       'email': email,
       if (department != null) 'department': department!.code,
-      if (admissionYear != null) 'admissionYear': admissionYear!.millisecondsSinceEpoch,
+      if (admissionYear != null) 'admissionYear': admissionYear,
       'myEvents': myEvents.map((event) => event.id).toList(),
       'followingEvents': followingEvents.map((event) => event.id).toList(),
       'myChannels': myChannels.map((channel) => channel.id).toList(),
@@ -141,19 +155,21 @@ class AuthenticatedUser extends User {
       final userDetails = FirebaseAuth.instance.currentUser;
       if (userDetails == null) return null;
 
-      final databaseRef = FirebaseFirestore.instance;
-      final collection = databaseRef.collection('Users');
-
-      final docRef = collection.doc(userDetails.uid);
+      final docRef = User.collection.doc(userDetails.uid);
       final snapshot = await docRef.get();
-      final data = snapshot.data()!;
+      final data = snapshot.data();
 
-      _instance =
-      User.cache[userDetails.uid] = _instance = AuthenticatedUser._fromMap(data);
-      _instance!.followingEvents.addAll(await Future.wait((data['followingEvents']! as List<dynamic>).map((e) => Event.load(e))));
-      _instance!.followingChannels.addAll(await Future.wait((data['followingChannels']! as List<dynamic>).map((e) => Channel.load(e))));
-      _instance!.myEvents.addAll(await Future.wait((data['myEvents']! as List<dynamic>).map((e) => Event.load(e))));
-      _instance!.myChannels.addAll(await Future.wait((data['myChannels']! as List<dynamic>).map((e) => Channel.load(e))));
+      if (data == null) {
+        await FirebaseAuth.instance.signOut();
+        await GoogleSignIn().signOut();
+        return null;
+      }
+
+      User._cache[userDetails.uid] = _instance = AuthenticatedUser._fromMap(data);
+      _instance!.followingEvents.addAll(await Future.wait((data['followingEvents']! as List<dynamic>).map((e) async => (await Event.load(e))!)));
+      _instance!.followingChannels.addAll(await Future.wait((data['followingChannels']! as List<dynamic>).map((e) async => (await Channel.load(e))!)));
+      _instance!.myEvents.addAll(await Future.wait((data['myEvents']! as List<dynamic>).map((e) async => (await Event.load(e))!)));
+      _instance!.myChannels.addAll(await Future.wait((data['myChannels']! as List<dynamic>).map((e) async => (await Channel.load(e))!)));
     }
 
     return _instance;
