@@ -26,7 +26,9 @@ class _ScreenEventsState extends State<ScreenEvents> {
     super.initState();
 
     GlobalDataHolder.instance.registerSimpleCallback("HomeEventScreenFAB", onFabPressed);
-    loadData().then((_) => setState(() => loading = false));
+    loadData().then((_) {
+      if (mounted) setState(() => loading = false);
+    });
   }
 
 
@@ -38,9 +40,6 @@ class _ScreenEventsState extends State<ScreenEvents> {
   }
 
   void onFabPressed() {
-    final server = Server.instance!;
-    final currentUser = server.currentUser!;
-
     showModalBottomSheet<Event>(
         context: context,
         isScrollControlled: true,
@@ -66,7 +65,7 @@ class _ScreenEventsState extends State<ScreenEvents> {
   @override
   Widget build(BuildContext context) {
     if (loading) return Center(child: Text('Loading Events'));
-    else if (myEvents.isEmpty) return const Center(child: Text('No Events'),);
+    if (myEvents.isEmpty) return const Center(child: Text('No Events'),);
     return ListView(
       children: myEvents.map((event) => EventCard(event: event)).toList(),
     );

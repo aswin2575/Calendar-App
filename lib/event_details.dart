@@ -69,11 +69,11 @@ class EventDetails extends StatelessWidget {
               children: [
                 if (event.location != null) InfoTile(leading: Icon(Icons.location_on_outlined), title: Text(event.location!),),
                 InfoTile(leading: Icon(Icons.event), title: Text("${months[event.scheduledDateTime!.month - 1]} ${event.scheduledDateTime!.day}, ${event.scheduledDateTime!.year}"),),
-                InfoTile(leading: Icon(Icons.watch_later_outlined), title: Text(getFormattedTime(event.scheduledDateTime!)),),
+                InfoTile(leading: Icon(Icons.watch_later_outlined), title: Text(event.allDayEvent? "All Day Event": getFormattedTime(event.scheduledDateTime!)),),
               ],
             ),
           ),
-          Container(
+          if (event.contacts.isNotEmpty) Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 color: currentTheme.surfaceContainerHigh),

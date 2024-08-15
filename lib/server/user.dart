@@ -131,10 +131,10 @@ class AuthenticatedUser extends User {
   // List<Event> myEvents = List<Event>.empty(growable: true);
   // List<Channel> myChannels = List<Channel>.empty(growable: true);
 
-  Future<List<Event>> get followingEvents async => await Future.wait(_followingEvents.map((eventId) => Event.load(eventId) as Future<Event>));
-  Future<List<Channel>> get followingChannels async => await Future.wait(_followingChannels.map((eventId) => Channel.load(eventId) as Future<Channel>));
+  Future<List<Event?>> get followingEvents async => await Future.wait(_followingEvents.map((eventId) => Event.load(eventId)));
+  Future<List<Channel?>> get followingChannels async => await Future.wait(_followingChannels.map((channelId) => Channel.load(channelId)));
   Future<List<Event>> get myEvents async {
-    final query = Event.collection.where('owner', isEqualTo: id);
+    final query = Event.collection.where('owner', isEqualTo: id).where('channel', isNull: true);
     return await Event.loadMultiple(query);
   }
   Future<List<Channel>> get myChannels async {

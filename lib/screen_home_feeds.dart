@@ -22,14 +22,16 @@ class _ScreenFeedsState extends State<ScreenFeeds> {
       server.getNewsFeeds(),
       server.currentUser!.followingEvents
     ]);
-    feeds = results[0];
-    followingEvents = results[1];
+    feeds = results[0].map((event) => event!).toList();
+    followingEvents = results[1].map((event) => event!).toList();
   }
 
   @override
   void initState() {
     super.initState();
-    loadData().then((_) => setState(() => loading = false));
+    loadData().then((_) {
+      if (mounted) setState(() => loading = false);
+    });
   }
 
   @override

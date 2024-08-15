@@ -6,110 +6,33 @@ import 'package:flutter/material.dart';
 
 import 'event_card.dart';
 import 'event_details.dart';
+import 'event_edit_sheet.dart';
+
 class ScreenChannels extends StatefulWidget {
-  const ScreenChannels({super.key});
+  final Channel channel;
+  const ScreenChannels({super.key, required this.channel});
 
   @override
   State<ScreenChannels> createState() => _ScreenChannelsState();
 }
 
 class _ScreenChannelsState extends State<ScreenChannels> {
-  final currentUser = Server.instance!.currentUser!;
+  late final List<Event> events;
+  bool loading = true;
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-          child: AppBar(
-            title: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Card.filled(
-                child: ListTile(
-                  leading: CircleAvatar(),
-                  title: Text('Channel Title'),
-                  onTap: (){},
-                ),
-              ),
-            ),
-          )),
-    );
+  Future<void> loadData() async {
+    final query = Event.collection.where('channel', isEqualTo: widget.channel.id);
+    events = await Event.loadMultiple(query);
   }
-}
-// class EventCard extends StatelessWidget {
-//   final String title;
-//   final String date;
-//   final String description;
-//   final String imageUrl;
-//
-//   const EventCard({
-//     Key? key,
-//     required this.title,
-//     required this.date,
-//     required this.description,
-//     required this.imageUrl,
-//   }) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Card(
-//       margin: EdgeInsets.all(10.0),
-//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-//       elevation: 5.0,
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           ClipRRect(
-//             borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
-//             child: Image.network(
-//               imageUrl,
-//               height: 150,
-//               width: double.infinity,
-//               fit: BoxFit.cover,
-//             ),
-//           ),
-//           Padding(
-//             padding: const EdgeInsets.all(8.0),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Text(
-//                   title,
-//                   style: TextStyle(
-//                     fontSize: 18.0,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                 ),
-//                 SizedBox(height: 5.0),
-//                 Text(
-//                   date,
-//                   style: TextStyle(
-//                     color: Colors.grey[600],
-//                   ),
-//                 ),
-//                 SizedBox(height: 10.0),
-//                 Text(
-//                   description,
-//                   maxLines: 2,
-//                   overflow: TextOverflow.ellipsis,
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
 
-class EventListScreen extends StatefulWidget {
   @override
-  State<EventListScreen> createState() => _EventListScreenState();
-}
+  void initState() {
+    super.initState();
 
-class _EventListScreenState extends State<EventListScreen> {
-  final server = Server.instance!;
-
-  late final List<Event> events = server.dummy() ;
+    loadData().then((_) {
+      if (mounted) setState(() => loading = false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +55,7 @@ class _EventListScreenState extends State<EventListScreen> {
               SizedBox(width: 8,),
               Expanded(
                   child: GestureDetector(
-                    child: Text('Events'),
+                    child: Text(widget.channel.name),
                   onTap: (){
                       Navigator.of(context).push(MaterialPageRoute(builder: (context) => ChannelSheet()));
                   },)),
@@ -158,7 +81,7 @@ class _EventListScreenState extends State<EventListScreen> {
           ),
         ),
       ),
-      body: events!.isEmpty? const Text('No Feeds Available'): ListView(
+      body: loading? Center(child: const Text('Loading Events...')): events.isEmpty? Center(child: const Text('No Events')): ListView(
           children: events.map((event) => GestureDetector(
             child: EventCard(
               event: event,
@@ -188,8 +111,32 @@ class _EventListScreenState extends State<EventListScreen> {
             ),
           )).toList()
       ),
-      floatingActionButton:(Server.instance!.currentUser!.isAdmin) ?FloatingActionButton(onPressed: (){},
-        child: Icon(Icons.add),): null,
+      floatingActionButton:(!Server.instance!.currentUser!.isAdmin)? null:
+        FloatingActionButton(
+          onPressed: (){
+            showModalBottomSheet<Event>(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                builder: (context) => DraggableScrollableSheet(
+                  expand: false,
+                  minChildSize: 0.2,
+                  initialChildSize: 0.6,
+                  builder: (context, scrollController) => SingleChildScrollView(
+                    controller: scrollController,
+                    child: EventEditSheet(channel: widget.channel),
+                  ),
+                )
+            ).then((event) {
+              if (event != null) {
+                setState(() {
+                  events.add(event);
+                });
+              }
+            });
+          },
+          child: Icon(Icons.add),
+        ),
     );
   }
 }

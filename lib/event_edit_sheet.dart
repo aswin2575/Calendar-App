@@ -321,6 +321,7 @@ class EventEditSheetState extends State<EventEditSheet> {
                     imageUrl: imageviewController.imageUrl,
                     scheduledDateTime: DateTime.now().add(Duration(days: random.nextInt(365), hours: random.nextInt(23))),
                     allDayEvent: true,
+                    channel: widget.channel
                   );
                   event.tags.addAll(tags);
                   event.links.addAll(links);
