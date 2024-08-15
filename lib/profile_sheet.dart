@@ -3,6 +3,7 @@ import 'package:calendar_app/global_data_holder.dart';
 import 'package:calendar_app/screen_admin_signup.dart';
 import 'package:calendar_app/server/server.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileSheet extends StatefulWidget {
   const ProfileSheet({super.key});
@@ -219,8 +220,10 @@ class _ProfileSheetState extends State<ProfileSheet> {
                 showDialog<ThemeMode>(
                   context: context,
                   builder: (BuildContext context) => ThemeModeSelector(initialValue: themeMode,)
-                ).then((result) {
+                ).then((result) async {
                   if (result== null) return;
+                  final SharedPrefs = await SharedPreferences.getInstance();
+                  SharedPrefs.setInt('theme',result.index);
                   setState(() {
                     GlobalDataHolder.instance.themeMode.value=result;
                   });
@@ -275,7 +278,7 @@ class _ThemeModeSelectorState extends State<ThemeModeSelector> {
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: (){
+              onPressed: () async {
                 Navigator.of(context).pop(ThemeMode.values[themes.indexOf(selectedValue)]);
               },
               child: const Text('OK'),

@@ -188,8 +188,8 @@ class _EventListScreenState extends State<EventListScreen> {
             ),
           )).toList()
       ),
-      floatingActionButton: FloatingActionButton(onPressed: (){},
-        child: Icon(Icons.add),),
+      floatingActionButton:(Server.instance!.currentUser!.isAdmin) ?FloatingActionButton(onPressed: (){},
+        child: Icon(Icons.add),): null,
     );
   }
 }

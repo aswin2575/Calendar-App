@@ -6,11 +6,14 @@ import 'package:calendar_app/screen_home.dart';
 import 'package:calendar_app/server/server.dart';
 import 'package:calendar_app/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Server.initialize();
-
+  final sharedPrefs = await SharedPreferences.getInstance();
+  final themes = sharedPrefs.getInt('theme');
+  GlobalDataHolder.instance.themeMode.value=ThemeMode.values[themes??0];
   runApp(const MyApp());
 }
 class MyApp extends StatelessWidget {
