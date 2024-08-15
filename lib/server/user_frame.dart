@@ -12,16 +12,16 @@ class UserFrame {
     collection.doc(email).set({
       'email': email,
       'isAdmin': isAdmin,
-      if (department != null) 'department': department!.code,
-      if (admissionYear != null) 'admissionYear': admissionYear,
+      'department': department?.code,
+      'admissionYear': admissionYear,
     });
   }
 
   UserFrame._fromMap(Map<String, dynamic> data) {
     email = data['email']! as String;
-    isAdmin = data['isAdmin'] as bool;
-    department = data.containsKey('department')? Department(code: data['department']): null;
-    admissionYear = data.containsKey('admissionYear')? data['admissionYear'] as int: null;
+    isAdmin = data['isAdmin']! as bool;
+    department = data['department'] != null? Department(code: data['department']): null;
+    admissionYear = data['admissionYear'];
   }
 
   Future<void> delete() async {

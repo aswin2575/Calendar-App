@@ -16,8 +16,7 @@ class _ScreenHomeChannelsState extends State<ScreenHomeChannels> {
   Future<void> loadData() async {
     final server = Server.instance!;
     final currentUser = server.currentUser!;
-    final channels = await (currentUser.isAdmin? Channel.loadMultiple(null): currentUser.followingChannels);
-    myChannels = channels.map((channel) => channel!).toList();
+    myChannels = await (currentUser.isAdmin? Channel.loadMultiple(null): currentUser.myChannels);
   }
 
   @override
@@ -47,14 +46,5 @@ class _ScreenHomeChannelsState extends State<ScreenHomeChannels> {
         );
       }).toList(),
     );
-    return ListView.separated(itemBuilder: (context, index) {
-
-    }, separatorBuilder: (context, index) => Divider(
-      indent: 16,
-      endIndent: 16,
-      thickness: 0,
-      height: 1,
-    ),
-        itemCount: 10);
   }
 }

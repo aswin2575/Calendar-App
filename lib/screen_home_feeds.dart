@@ -20,10 +20,10 @@ class _ScreenFeedsState extends State<ScreenFeeds> {
   Future<void> loadData() async {
     final results = await Future.wait([
       server.getNewsFeeds(),
-      server.currentUser!.followingEvents
+      server.currentUser!.myEvents
     ]);
-    feeds = results[0].map((event) => event!).toList();
-    followingEvents = results[1].map((event) => event!).toList();
+    feeds = results[0];
+    followingEvents = results[1];
   }
 
   @override
@@ -42,9 +42,18 @@ class _ScreenFeedsState extends State<ScreenFeeds> {
           child: EventCard(
             event: event,
             showTime: false,
-            actionButton: event.channel == null? OutlinedButton(onPressed: () {}, child: const Text('Remove')):
-              followingEvents.contains(event)? OutlinedButton(onPressed: () {}, child: const Text('Remove')):
-              FilledButton.tonal(onPressed: () {}, child: const Text('Follow')),
+            actionButton: followingEvents.contains(event)? OutlinedButton(onPressed: () {
+                server.currentUser!.unfollowEvent(event);
+                setState(() {
+                  followingEvents.remove(event);
+                });
+              }, child: const Text('Unfollow')):
+              FilledButton.tonal(onPressed: () {
+                server.currentUser!.followEvent(event);
+                setState(() {
+                  followingEvents.add(event);
+                });
+              }, child: const Text('Follow')),
           ),
           onTap: () => showModalBottomSheet(
               context: context,
@@ -55,6 +64,7 @@ class _ScreenFeedsState extends State<ScreenFeeds> {
                 return DraggableScrollableSheet(
                   maxChildSize: 0.9,
                   minChildSize: 0.2,
+                  initialChildSize: event.imageUrl == null? 0.25: 0.6,
                   expand: false,
                   builder: (BuildContext context, ScrollController scrollController) {
                     return SingleChildScrollView(

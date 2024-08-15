@@ -108,19 +108,19 @@ class Server {
         }
 
         // Create Necessary Default Channels
+        await Channel(
+            id: 'asiet',
+            name: 'ASIET',
+            owner: user,
+            description: 'The official main default channel'
+        ).commit();
+
         List<Channel> channels = Department.codes.map((code) => Channel(
           id: code,
           name: Department._departmentNames[code]!,
           owner: user,
           description: '${Department._departmentNames[code]} Specific Channel'
-        )).toList() + [
-          Channel(
-              id: 'asiet',
-              name: 'ASIET',
-              owner: user,
-              description: 'The official main default channel'
-          )
-        ];
+        )).toList();
 
         await adminUidRef.set(userDetails.uid);
         await Future.wait(channels.map((channel) => channel.commit()));
@@ -179,29 +179,6 @@ class Server {
   }
 
   Future<List<Event>> getNewsFeeds() async {
-    // final random = Random(0);
-    // return List<Event>.generate(random.nextInt(30), (index) {
-    //   var event = Event._fromMap({
-    //     'id': index.toString(),
-    //     'title': 'Event $index',
-    //     'isInfo': false,
-    //     'description': 'Some description $index',
-    //     'location': 'ADP LAB',
-    //     'scheduledDateTime': DateTime.now().add(Duration(days: random.nextInt(365), hours: random.nextInt(23))),
-    //     'actionLink': {
-    //       'title': 'Register',
-    //       'uri': 'https://www.google.com',
-    //       'due': DateTime.now().add(Duration(days: random.nextInt(365), hours: random.nextInt(23)))
-    //     },
-    //     'allDayEvent': false,
-    //     if (random.nextBool()) 'imageUrl':'https://fisat.ac.in/wp-content/uploads/2023/04/Nautilus.jpeg',
-    //   });
-    //   event.channel = null;
-    //   event.tags.addAll([ 'Arts', 'Sports' ]);
-    //   event.links.addAll([ Link(title: 'Google', uri: 'https://www.google.com') ]);
-    //   event.contacts.addAll([ Contact(name: 'Ansif', phone: '7025694703') ]);
-    //   return event;
-    // });
 
     final query = Event.collection
         .where('channel', isNull: false)

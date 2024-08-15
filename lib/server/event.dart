@@ -30,36 +30,36 @@ class Event {
       'id': id,
       'owner': owner.id,
       'isInfo': isInfo,
-      if (description != null) 'description': description!,
-      if (location != null) 'location': location!,
-      if (imageUrl != null) 'imageUrl': imageUrl!,
-      if (scheduledDateTime != null) 'scheduledDateTime': scheduledDateTime,
-      if (actionLink != null) 'actionLink': {
+      'description': description,
+      'location': location,
+      'imageUrl': imageUrl,
+      'scheduledDateTime': scheduledDateTime,
+      'actionLink': actionLink == null? null: {
         'title': actionLink!.title,
         'uri': actionLink!.uri,
-        if (actionLink!.due != null) 'due': actionLink!.due,
+        'due': actionLink!.due,
       },
       'allDayEvent': allDayEvent,
       'tags': tags,
       'links': links.map((link) => { 'title': link.title, 'uri': link.uri }).toList(),
       'contacts': contacts.map((contact) => { 'name': contact.name, 'phone': contact.phone }).toList(),
-      if (channel != null) 'channel': channel!.id,
+      'channel': channel?.id,
     });
   }
 
   Event._fromMap(Map<String, dynamic> data) {
-    title = data['title'] as String;
-    id = data['id'] as String;
-    isInfo = data['isInfo'] as bool;
-    allDayEvent = data['allDayEvent'] as bool;
-    description = data.containsKey('description')? data['description'] as String: null;
-    imageUrl = data.containsKey('imageUrl')? data['imageUrl'] as String: null;
-    location = data.containsKey('location')? data['location'] as String: null;
-    scheduledDateTime = data.containsKey('scheduledDateTime')? (data['scheduledDateTime'] as Timestamp).toDate(): null;
-    actionLink = data.containsKey('actionLink')? ActionLink._fromMap(data['actionLink']!): null;
-    if (data.containsKey('tags')) tags.addAll((data['tags'] as List<dynamic>).map((e) => e as String));
-    if (data.containsKey('links')) links.addAll((data['links'] as List<dynamic>).map((e) => Link(title: e['title']!, uri: e['uri']!)));
-    if (data.containsKey('contacts')) contacts.addAll((data['contacts'] as List<dynamic>).map((e) => Contact(name: e['name']!, phone: e['phone']!)));
+    title = data['title'];
+    id = data['id'];
+    isInfo = data['isInfo'];
+    allDayEvent = data['allDayEvent'];
+    description = data['description'];
+    imageUrl = data['imageUrl'];
+    location = data['location'];
+    scheduledDateTime = (data['scheduledDateTime'] as Timestamp?)?.toDate();
+    actionLink = data['actionLink'] != null? ActionLink._fromMap(data['actionLink']): null;
+    tags.addAll((data['tags'] as List<dynamic>).map((e) => e as String));
+    links.addAll((data['links'] as List<dynamic>).map((e) => Link(title: e['title']!, uri: e['uri']!)));
+    contacts.addAll((data['contacts'] as List<dynamic>).map((e) => Contact(name: e['name']!, phone: e['phone']!)));
   }
   
   Future<void> delete() async {
@@ -77,6 +77,7 @@ class Event {
     final data = snapshot.data()!;
     final instance = _cache[id] = Event._fromMap(data);
     instance.channel = data.containsKey('channel')? await Channel.load(data['channel']! as String): null;
+    instance.owner = (await User.load(data['owner']! as String))!;
     return instance;
   }
 
@@ -89,7 +90,7 @@ class Event {
       if (_cache.containsKey(id)) return _cache[id]!;
 
       final instance = _cache[id] = Event._fromMap(data);
-      instance.channel = data.containsKey('channel')? await Channel.load(data['channel']! as String): null;
+      instance.channel = data['channel'] != null? await Channel.load(data['channel']): null;
       instance.owner = (await User.load(data['owner']! as String))!;
       return instance;
     });

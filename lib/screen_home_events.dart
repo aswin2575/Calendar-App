@@ -2,6 +2,7 @@ import 'package:calendar_app/event_card.dart';
 import 'package:calendar_app/global_data_holder.dart';
 import 'package:flutter/material.dart';
 
+import 'event_details.dart';
 import 'event_edit_sheet.dart';
 import 'server/server.dart';
 
@@ -67,7 +68,46 @@ class _ScreenEventsState extends State<ScreenEvents> {
     if (loading) return Center(child: Text('Loading Events'));
     if (myEvents.isEmpty) return const Center(child: Text('No Events'),);
     return ListView(
-      children: myEvents.map((event) => EventCard(event: event)).toList(),
+      children: myEvents.map((event) {
+        return GestureDetector(
+          child: EventCard(
+            event: event,
+            actionButton: OutlinedButton(
+              child: Text(event.channel == null? 'Remove': 'Unfollow'),
+              onPressed: () {
+                setState(() {
+                  myEvents.remove(event);
+                });
+                if (event.channel == null) {
+                  event.delete();
+                } else{
+                  Server.instance!.currentUser!.unfollowEvent(event);
+                }
+              },
+            ),
+          ),
+          onTap: () => showModalBottomSheet(
+            context: context,
+            useSafeArea: true,
+            showDragHandle: true,
+            isScrollControlled: true,
+            builder: (BuildContext context) {
+              return DraggableScrollableSheet(
+                maxChildSize: 0.9,
+                minChildSize: 0.2,
+                expand: false,
+                initialChildSize: event.imageUrl == null? 0.25: 0.6,
+                builder: (BuildContext context, ScrollController scrollController) {
+                  return SingleChildScrollView(
+                    controller: scrollController,
+                    child: EventDetails(event: event)
+                  );
+                },
+              );
+            }
+          ),
+        );
+      }).toList(),
     );
   }
 }

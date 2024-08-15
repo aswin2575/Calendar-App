@@ -88,13 +88,13 @@ class User {
   static final collection = FirebaseFirestore.instance.collection('Users');
 
   User._fromMap(Map<String, dynamic> data) {
-    name = data['name']! as String;
-    photoUrl = data['photoUrl']! as String;
-    email = data['email']! as String;
-    id = data['id']! as String;
-    isAdmin = data['isAdmin']! as bool;
-    department = data.containsKey('department')? Department(code: data['department']): null;
-    admissionYear = data.containsKey('admissionYear')? data['admissionYear']: null;
+    name = data['name']!;
+    photoUrl = data['photoUrl']!;
+    email = data['email']!;
+    id = data['id']!;
+    isAdmin = data['isAdmin']!;
+    department = data['department'] != null? Department(code: data['department']): null;
+    admissionYear = data['admissionYear'];
   }
 
   static final Map<String, User> _cache = {};
@@ -131,21 +131,38 @@ class AuthenticatedUser extends User {
   // List<Event> myEvents = List<Event>.empty(growable: true);
   // List<Channel> myChannels = List<Channel>.empty(growable: true);
 
-  Future<List<Event?>> get followingEvents async => await Future.wait(_followingEvents.map((eventId) => Event.load(eventId)));
-  Future<List<Channel?>> get followingChannels async => await Future.wait(_followingChannels.map((channelId) => Channel.load(channelId)));
+  // Future<List<Event?>> get followingEvents async => await Future.wait(_followingEvents.map((eventId) => Event.load(eventId)));
+  // Future<List<Channel?>> get followingChannels async => await Future.wait(_followingChannels.map((channelId) => Channel.load(channelId)));
   Future<List<Event>> get myEvents async {
-    final query = Event.collection.where('owner', isEqualTo: id).where('channel', isNull: true);
+    var filter = Filter.and(Filter('channel', isNull: true), Filter('owner', isEqualTo: id));
+    if (_followingEvents.isNotEmpty) filter = Filter.or( filter, Filter.and(Filter('channel', isNull: false), Filter('id', whereIn: _followingEvents)));
+    final query = Event.collection.where(filter);
     return await Event.loadMultiple(query);
   }
   Future<List<Channel>> get myChannels async {
-    final ownerQuery = Channel.collection.where('owner', isEqualTo: id);
-    final adminQuery = Channel.collection.where('admin', arrayContains: id);
-    final results = await Future.wait([ Channel.loadMultiple(ownerQuery), Channel.loadMultiple(adminQuery) ]);
-    return results[0]+results[1];
-
+    final query = Channel.collection.where(Filter.or(
+        Filter('owner', isEqualTo: id),
+        Filter('admin', arrayContains: id),
+        Filter('id', whereIn: _followingChannels)
+    ));
+    return await Channel.loadMultiple(query);
   }
 
   AuthenticatedUser._fromMap(super.data): super._fromMap();
+
+  Future<void> followEvent(Event event) async {
+    _followingEvents.add(event.id);
+    await User.collection.doc(id).update({
+      'followingEvents': _followingEvents
+    });
+  }
+
+  Future<void> unfollowEvent(Event event) async {
+    _followingEvents.remove(event.id);
+    await User.collection.doc(id).update({
+      'followingEvents': _followingEvents
+    });
+  }
 
   void commit() async {
     await User.collection.doc(id).set({
@@ -153,8 +170,8 @@ class AuthenticatedUser extends User {
       'id': id,
       'photoUrl': photoUrl,
       'email': email,
-      if (department != null) 'department': department!.code,
-      if (admissionYear != null) 'admissionYear': admissionYear,
+      'department': department?.code,
+      'admissionYear': admissionYear,
       'followingEvents': _followingEvents,
       'followingChannels': _followingChannels,
       'isAdmin': isAdmin

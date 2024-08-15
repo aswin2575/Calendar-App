@@ -16,9 +16,9 @@ class Channel {
   }
 
   Channel._fromMap(Map<String, dynamic> data) {
-    id = data['id']! as String;
-    name = data['name']! as String;
-    description = data['description'] as String?;
+    id = data['id']!;
+    name = data['name']!;
+    description = data['description'];
   }
 
   Future<void> commit() async {
@@ -26,7 +26,7 @@ class Channel {
       'name': name,
       'id': id,
       'owner': owner.id,
-      if (description != null) 'description': description!,
+      'description': description,
       'admin': _admins,
     });
   }

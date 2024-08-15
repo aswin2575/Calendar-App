@@ -21,7 +21,10 @@ class _ScreenChannelsState extends State<ScreenChannels> {
   bool loading = true;
 
   Future<void> loadData() async {
-    final query = Event.collection.where('channel', isEqualTo: widget.channel.id);
+    final query = Event.collection
+        .where('channel', isEqualTo: widget.channel.id)
+        .where('scheduledDateTime', isGreaterThanOrEqualTo: DateTime.now())
+        .orderBy('scheduledDateTime');
     events = await Event.loadMultiple(query);
   }
 
