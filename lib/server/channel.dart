@@ -5,12 +5,14 @@ class Channel {
   late String name;
   String? description;
   late User owner;
-  List<User> admins = List<User>.empty(growable: true);
+  final List<String> _admins = List<String>.empty(growable: true);
+
+  Future<List<User>> get admins async => await Future.wait(_admins.map((userid) => User.load(userid) as Future<User>));
 
   static final collection = FirebaseFirestore.instance.collection('Channels');
 
-  Channel({ required this.name, required this.owner, this.description }) {
-    id = DateTime.now().millisecondsSinceEpoch.toString();
+  Channel({ required this.name, required this.owner, this.description, String? id }) {
+    this.id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
   }
 
   Channel._fromMap(Map<String, dynamic> data) {
@@ -25,7 +27,7 @@ class Channel {
       'id': id,
       'owner': owner.id,
       if (description != null) 'description': description!,
-      'contacts': admins.map((admin) => admin.id).toList(),
+      'admin': _admins,
     });
   }
 
@@ -44,7 +46,7 @@ class Channel {
     final data = snapshot.data()!;
     final instance = _cache[id] = Channel._fromMap(data);
     instance.owner = (await User.load(data['owner']! as String))!;
-    instance.admins.addAll(await Future.wait((data['admin']! as List<String>).map((e) async => (await User.load(e))!)));
+    instance._admins.addAll((data['admin']! as List<dynamic>).map((e) => e as String));
     return instance;
   }
 
@@ -58,7 +60,6 @@ class Channel {
 
       final instance = _cache[id] = Channel._fromMap(data);
       instance.owner = (await User.load(data['owner']! as String))!;
-      instance.admins.addAll(await Future.wait((data['admin']! as List<String>).map((e) async => (await User.load(e))!)));
       return instance;
     });
 

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:calendar_app/event_edit_sheet.dart';
+import 'package:calendar_app/global_data_holder.dart';
 import 'package:calendar_app/profile_sheet.dart';
 import 'package:calendar_app/screen_home_admin.dart';
 import 'package:calendar_app/screen_home_channels.dart';
@@ -37,27 +38,7 @@ class _ScreenHomeState extends State<ScreenHome> {
       ),
       floatingActionButton: (_currentPageIndex == 1 || (_currentPageIndex == 2 && Server.instance!.currentUser!.isAdmin)) ? FloatingActionButton(onPressed: () {
         if (_currentPageIndex == 1) {
-          showModalBottomSheet<Event>(
-            context: context,
-            isScrollControlled: true,
-            useSafeArea: true,
-            builder: (context) => DraggableScrollableSheet(
-              expand: false,
-              minChildSize: 0.2,
-              initialChildSize: 0.6,
-              builder: (context, scrollController) => SingleChildScrollView(
-                  controller: scrollController,
-                  child: EventEditSheet(),
-                ),
-              )
-          ).then((event) {
-            setState(() {
-              if (event != null) {
-                currentUser.myEvents.add(event);
-                currentUser.commit();
-              }
-            });
-          });
+          GlobalDataHolder.instance.invokeSimpleCallback("HomeEventScreenFAB");
         }
       }, child: Icon(Icons.add),): null,
       body: SafeArea(

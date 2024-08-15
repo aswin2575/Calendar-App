@@ -152,6 +152,7 @@ class _UserFrameDialogState extends State<UserFrameDialog> {
             expandedInsets: EdgeInsets.zero,
           ),
           if (!isAdmin) TextField(
+            keyboardType: TextInputType.number,
             controller: yearController,
             decoration: InputDecoration(border: InputBorder.none, hintText: 'Admission Year'),
           ),

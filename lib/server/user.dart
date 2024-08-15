@@ -126,10 +126,24 @@ class User {
 }
 
 class AuthenticatedUser extends User {
-  List<Event> followingEvents = List<Event>.empty(growable: true);
-  List<Channel> followingChannels = List<Channel>.empty(growable: true);
-  List<Event> myEvents = List<Event>.empty(growable: true);
-  List<Channel> myChannels = List<Channel>.empty(growable: true);
+  final List<String> _followingEvents = List<String>.empty(growable: true);
+  final List<String> _followingChannels = List<String>.empty(growable: true);
+  // List<Event> myEvents = List<Event>.empty(growable: true);
+  // List<Channel> myChannels = List<Channel>.empty(growable: true);
+
+  Future<List<Event>> get followingEvents async => await Future.wait(_followingEvents.map((eventId) => Event.load(eventId) as Future<Event>));
+  Future<List<Channel>> get followingChannels async => await Future.wait(_followingChannels.map((eventId) => Channel.load(eventId) as Future<Channel>));
+  Future<List<Event>> get myEvents async {
+    final query = Event.collection.where('owner', isEqualTo: id);
+    return await Event.loadMultiple(query);
+  }
+  Future<List<Channel>> get myChannels async {
+    final ownerQuery = Channel.collection.where('owner', isEqualTo: id);
+    final adminQuery = Channel.collection.where('admin', arrayContains: id);
+    final results = await Future.wait([ Channel.loadMultiple(ownerQuery), Channel.loadMultiple(adminQuery) ]);
+    return results[0]+results[1];
+
+  }
 
   AuthenticatedUser._fromMap(super.data): super._fromMap();
 
@@ -141,10 +155,8 @@ class AuthenticatedUser extends User {
       'email': email,
       if (department != null) 'department': department!.code,
       if (admissionYear != null) 'admissionYear': admissionYear,
-      'myEvents': myEvents.map((event) => event.id).toList(),
-      'followingEvents': followingEvents.map((event) => event.id).toList(),
-      'myChannels': myChannels.map((channel) => channel.id).toList(),
-      'followingChannels': followingChannels.map((channel) => channel.id).toList(),
+      'followingEvents': _followingEvents,
+      'followingChannels': _followingChannels,
       'isAdmin': isAdmin
     });
   }
@@ -166,10 +178,8 @@ class AuthenticatedUser extends User {
       }
 
       User._cache[userDetails.uid] = _instance = AuthenticatedUser._fromMap(data);
-      _instance!.followingEvents.addAll(await Future.wait((data['followingEvents']! as List<dynamic>).map((e) async => (await Event.load(e))!)));
-      _instance!.followingChannels.addAll(await Future.wait((data['followingChannels']! as List<dynamic>).map((e) async => (await Channel.load(e))!)));
-      _instance!.myEvents.addAll(await Future.wait((data['myEvents']! as List<dynamic>).map((e) async => (await Event.load(e))!)));
-      _instance!.myChannels.addAll(await Future.wait((data['myChannels']! as List<dynamic>).map((e) async => (await Channel.load(e))!)));
+      _instance!._followingEvents.addAll((data['followingEvents']! as List<dynamic>).map((e) => e as String));
+      _instance!._followingChannels.addAll((data['followingChannels']! as List<dynamic>).map((e) => e as String));
     }
 
     return _instance;

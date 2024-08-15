@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
+import 'main.dart';
 import 'server/server.dart';
 
 class EventEditSheet extends StatefulWidget {
@@ -29,9 +30,37 @@ class EventEditSheetState extends State<EventEditSheet> {
   final imageviewController = ImageViewController();
   late final id = widget.event?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
 
+  late int year;
+  late int month;
+  late int day;
+  late int hour;
+  late int minute;
+
+  final months = const [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+  ];
+
   @override
   void initState() {
     super.initState();
+
+    final now = DateTime.now();
+    year = now.year;
+    month = now.month;
+    day = now.day;
+    hour = now.hour;
+    minute = now.minute+10;
 
     titleController.addListener(() {
       if (titleController.text.isNotEmpty != savable) {
@@ -62,6 +91,7 @@ class EventEditSheetState extends State<EventEditSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
             child: TextField(
               controller: titleController,
+              keyboardType: TextInputType.name,
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: 'Event Name',
@@ -82,19 +112,40 @@ class EventEditSheetState extends State<EventEditSheet> {
             ),
           ),
           ListTile(
-            onTap: () {},
+            onTap: () {
+              showDatePicker(
+                  context: context,
+                  firstDate: DateTime(year, month, day),
+                  lastDate: DateTime(year+10, month, day)
+              ).then((dateTime) {
+                if (dateTime == null) return;
+                setState(() {
+                  year = dateTime.year;
+                  month = dateTime.month;
+                  day = dateTime.day;
+                });
+              });
+            },
             leading: const Icon(Icons.event),
-            title: Text("January 21, 2024"),
+            title: Text("${months[month - 1]} $day, $year"),
           ),
           ListTile(
             leading: const Icon(Icons.more_time),
-            title: Text("All Day Event"),
+            title: const Text("All Day Event"),
             trailing: Switch(onChanged: (value) => setState(() => allDayEvent = value), value: allDayEvent,),
           ),
           if (!allDayEvent) ListTile(
             leading: const Icon(Icons.access_time),
-            title: Text("10:30 AM"),
-            onTap: () {},
+            title: Text(getFormattedTime(DateTime(year, month, day, hour, minute))),
+            onTap: () {
+              showTimePicker(context: context, initialTime: TimeOfDay(hour: hour, minute: minute)).then((time) {
+                if (time == null) return;
+                setState(() {
+                  hour = time.hour;
+                  minute = time.minute;
+                });
+              });
+            },
           ),
           const Divider(),
           if (tags.isNotEmpty) Container(
@@ -111,14 +162,14 @@ class EventEditSheetState extends State<EventEditSheet> {
                     spacing: 4,
                     children: tags.map<Widget>((e) => InputChip(
                       onDeleted: () => setState(() => tags.remove(e)),
-                      label: Text(e), padding: EdgeInsets.symmetric(vertical: 0, horizontal: 4),
+                      label: Text('#$e'), padding: EdgeInsets.symmetric(vertical: 0, horizontal: 4),
                     )).toList() + [
                       IconButton(
                           icon: Icon(Icons.add),
                           onPressed: () {
                             showDialog<String>(
                               context: context,
-                              builder: (context) => tagsDialog(context),
+                              builder: (context) => const TagsDialog(),
                             ).then((tag) => tag != null? setState(() => tags.add(tag)): null);
                           }
                       )
@@ -139,7 +190,7 @@ class EventEditSheetState extends State<EventEditSheet> {
                 FilledButton.tonal(onPressed: () {
                   showDialog<String>(
                     context: context,
-                    builder: (context) => tagsDialog(context),
+                    builder: (context) => const TagsDialog(),
                   ).then((tag) => tag != null? setState(() => tags.add(tag)): null);
                 }, child: Text("Add Tags"))
               ],
@@ -167,7 +218,7 @@ class EventEditSheetState extends State<EventEditSheet> {
                             onPressed: () {
                               showDialog<Link>(
                                 context: context,
-                                builder: (context) => linksDialog(context),
+                                builder: (context) => const LinksDialog(),
                               ).then((link) => link != null? setState(() => links.add(link)): null);
                             }
                         )
@@ -188,7 +239,7 @@ class EventEditSheetState extends State<EventEditSheet> {
                 FilledButton.tonal(onPressed: () {
                   showDialog<Link>(
                     context: context,
-                    builder: (context) => linksDialog(context),
+                    builder: (context) => const LinksDialog(),
                   ).then((link) => link != null? setState(() => links.add(link)): null);
                 }, child: Text("Add Links"))
               ],
@@ -216,7 +267,7 @@ class EventEditSheetState extends State<EventEditSheet> {
                             onPressed: () {
                               showDialog<Contact>(
                                 context: context,
-                                builder: (context) => contactsDialog(context),
+                                builder: (context) => const ContactsDialog(),
                               ).then((contact) => contact != null? setState(() => contacts.add(contact)): null);
                             }
                         )
@@ -237,7 +288,7 @@ class EventEditSheetState extends State<EventEditSheet> {
                 FilledButton.tonal(onPressed: () {
                   showDialog<Contact>(
                     context: context,
-                    builder: (context) => contactsDialog(context),
+                    builder: (context) => const ContactsDialog(),
                   ).then((contact) => contact != null? setState(() => contacts.add(contact)): null);
                 }, child: Text("Add Contacts"))
               ],
@@ -262,10 +313,11 @@ class EventEditSheetState extends State<EventEditSheet> {
                 if (widget.event == null) {
                   final random = Random(5);
                   final event = Event(
+                    owner: Server.instance!.currentUser!,
                     id: id,
                     title: titleController.text,
-                    description: descriptionController.text,
-                    location: locationController.text,
+                    description: descriptionController.text.isNotEmpty? descriptionController.text: null,
+                    location: locationController.text.isNotEmpty? locationController.text: null,
                     imageUrl: imageviewController.imageUrl,
                     scheduledDateTime: DateTime.now().add(Duration(days: random.nextInt(365), hours: random.nextInt(23))),
                     allDayEvent: true,
@@ -284,10 +336,34 @@ class EventEditSheetState extends State<EventEditSheet> {
       ),
     );
   }
+}
 
-  AlertDialog tagsDialog(BuildContext context) {
-    final inputController = TextEditingController();
+class TagsDialog extends StatefulWidget {
+  const TagsDialog({super.key});
 
+  @override
+  State<TagsDialog> createState() => _TagsDialogState();
+}
+
+class _TagsDialogState extends State<TagsDialog> {
+  final inputController = TextEditingController();
+
+  bool _savable = false;
+  bool get savable => _savable = inputController.text.isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+
+    inputController.addListener(() {
+      if (_savable != inputController.text.isNotEmpty) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
         title: const Text("Add Tags"),
         content: Column(
@@ -312,7 +388,7 @@ class EventEditSheetState extends State<EventEditSheet> {
                 SizedBox(width: 8,),
                 Expanded(
                     child: FilledButton.tonal(
-                      onPressed: () => Navigator.of(context).pop(inputController.text),
+                      onPressed: savable? () => Navigator.of(context).pop(inputController.text): null,
                       child: Text("Add"),
                     )
                 )
@@ -322,11 +398,38 @@ class EventEditSheetState extends State<EventEditSheet> {
         )
     );
   }
+}
 
-  AlertDialog linksDialog(BuildContext context) {
-    final titleController = TextEditingController();
-    final uriController = TextEditingController();
+class LinksDialog extends StatefulWidget {
+  const LinksDialog({super.key});
 
+  @override
+  State<LinksDialog> createState() => _LinksDialogState();
+}
+
+class _LinksDialogState extends State<LinksDialog> {
+  final titleController = TextEditingController();
+  final uriController = TextEditingController();
+
+  bool _savable = false;
+  bool get savable => _savable = titleController.text.isNotEmpty && uriController.text.isNotEmpty;
+
+  void textEditingListener() {
+    if (_savable != titleController.text.isNotEmpty && uriController.text.isNotEmpty) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    titleController.addListener(textEditingListener);
+    uriController.addListener(textEditingListener);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
         title: const Text("Add A Link"),
         content: Column(
@@ -358,7 +461,7 @@ class EventEditSheetState extends State<EventEditSheet> {
                 SizedBox(width: 8,),
                 Expanded(
                     child: FilledButton.tonal(
-                      onPressed: () => Navigator.of(context).pop(Link(title: titleController.text, uri: uriController.text)),
+                      onPressed: savable? () => Navigator.of(context).pop(Link(title: titleController.text, uri: uriController.text)): null,
                       child: Text("Add"),
                     )
                 )
@@ -368,11 +471,38 @@ class EventEditSheetState extends State<EventEditSheet> {
         )
     );
   }
+}
 
-  AlertDialog contactsDialog(BuildContext context) {
-    final nameController = TextEditingController();
-    final phoneController = TextEditingController();
+class ContactsDialog extends StatefulWidget {
+  const ContactsDialog({super.key});
 
+  @override
+  State<ContactsDialog> createState() => _ContactsDialogState();
+}
+
+class _ContactsDialogState extends State<ContactsDialog> {
+  final nameController = TextEditingController();
+  final phoneController = TextEditingController();
+
+  bool _savable = false;
+  bool get savable => _savable = nameController.text.isNotEmpty && phoneController.text.isNotEmpty;
+
+  void textEditingListener() {
+    if (_savable != nameController.text.isNotEmpty && phoneController.text.isNotEmpty) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    nameController.addListener(textEditingListener);
+    phoneController.addListener(textEditingListener);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
         title: const Text("Add Contact Details"),
         content: Column(
@@ -404,7 +534,7 @@ class EventEditSheetState extends State<EventEditSheet> {
                 SizedBox(width: 8,),
                 Expanded(
                     child: FilledButton.tonal(
-                      onPressed: () => Navigator.of(context).pop(Contact(name: nameController.text, phone: phoneController.text)),
+                      onPressed: savable? () => Navigator.of(context).pop(Contact(name: nameController.text, phone: phoneController.text)): null,
                       child: Text("Add"),
                     )
                 )

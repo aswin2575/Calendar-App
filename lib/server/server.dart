@@ -96,8 +96,9 @@ class Server {
         }
 
         // If Signup Builder is available then launch as Admin
+        final user = User._fromMap(userData);
         if (signupBuilder != null) {
-          final route = MaterialPageRoute<bool>(builder: (context) => signupBuilder(context, User._fromMap(userData)));
+          final route = MaterialPageRoute<bool>(builder: (context) => signupBuilder(context, user));
           final success = await Navigator.of(context).push<bool>(route) ?? false;
 
           if (!success) {
@@ -106,7 +107,23 @@ class Server {
           }
         }
 
+        // Create Necessary Default Channels
+        List<Channel> channels = Department.codes.map((code) => Channel(
+          id: code,
+          name: Department._departmentNames[code]!,
+          owner: user,
+          description: '${Department._departmentNames[code]} Specific Channel'
+        )).toList() + [
+          Channel(
+              id: 'asiet',
+              name: 'ASIET',
+              owner: user,
+              description: 'The official main default channel'
+          )
+        ];
+
         await adminUidRef.set(userDetails.uid);
+        await Future.wait(channels.map((channel) => channel.commit()));
       } else {
         // Else if check for whether the admin added user details in authorized list
         final userFrame = await UserFrame.load(userDetails.email!);
@@ -126,6 +143,13 @@ class Server {
         userData['isAdmin'] = userFrame.isAdmin;
         if (userFrame.department != null) userData['department'] = userFrame.department!.code;
         if (userFrame.admissionYear != null) userData['admissionYear'] = userFrame.admissionYear!;
+
+        if (!userFrame.isAdmin) {
+          userData['followingChannels'] = [
+            'asiet',
+            userFrame.department!.code
+          ];
+        }
 
         // If signup Builder available launch it
         if (signupBuilder != null) {

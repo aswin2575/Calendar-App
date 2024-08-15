@@ -13,24 +13,35 @@ class ScreenFeeds extends StatefulWidget {
 class _ScreenFeedsState extends State<ScreenFeeds> {
   final server = Server.instance!;
 
-  List<Event>? feeds;
+  late List<Event> feeds;
+  late List<Event> followingEvents;
+  bool loading = true;
+
+  Future<void> loadData() async {
+    final results = await Future.wait([
+      server.getNewsFeeds(),
+      server.currentUser!.followingEvents
+    ]);
+    feeds = results[0];
+    followingEvents = results[1];
+  }
 
   @override
   void initState() {
     super.initState();
-    server.getNewsFeeds().then((feeds) => setState(() => this.feeds = feeds));
+    loadData().then((_) => setState(() => loading = false));
   }
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: feeds == null? const Text('Loading Feeds'): feeds!.isEmpty? const Text('No Feeds Available'): ListView(
-        children: feeds!.map((event) => GestureDetector(
+      child: loading? const Text('Loading Feeds'): feeds.isEmpty? const Text('No Feeds Available'): ListView(
+        children: feeds.map((event) => GestureDetector(
           child: EventCard(
             event: event,
             showTime: false,
             actionButton: event.channel == null? OutlinedButton(onPressed: () {}, child: const Text('Remove')):
-              server.currentUser!.followingEvents.contains(event)? OutlinedButton(onPressed: () {}, child: const Text('Remove')):
+              followingEvents.contains(event)? OutlinedButton(onPressed: () {}, child: const Text('Remove')):
               FilledButton.tonal(onPressed: () {}, child: const Text('Follow')),
           ),
           onTap: () => showModalBottomSheet(

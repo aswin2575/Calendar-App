@@ -12,6 +12,7 @@ class Event {
   late bool allDayEvent;
 
   late final Channel? channel;
+  late final User owner;
 
   final List<String> tags = List<String>.empty(growable: true);
   final List<Link> links = List<Link>.empty(growable: true);
@@ -19,7 +20,7 @@ class Event {
 
   static final collection = FirebaseFirestore.instance.collection('Events');
 
-  Event( { required this.title, this.isInfo = false, this.description, this.location, this.scheduledDateTime, this.imageUrl, this.channel, this.actionLink, this.allDayEvent = true, String? id } ) {
+  Event({ required this.title, required this.owner, this.isInfo = false, this.description, this.location, this.scheduledDateTime, this.imageUrl, this.channel, this.actionLink, this.allDayEvent = true, String? id } ) {
     this.id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
   }
 
@@ -27,6 +28,7 @@ class Event {
     await collection.doc(id).set({
       'title': title,
       'id': id,
+      'owner': owner.id,
       'isInfo': isInfo,
       if (description != null) 'description': description!,
       if (location != null) 'location': location!,
@@ -53,7 +55,7 @@ class Event {
     description = data.containsKey('description')? data['description'] as String: null;
     imageUrl = data.containsKey('imageUrl')? data['imageUrl'] as String: null;
     location = data.containsKey('location')? data['location'] as String: null;
-    scheduledDateTime = data.containsKey('scheduledDateTime')? data['scheduledDateTime'] as DateTime: null;
+    scheduledDateTime = data.containsKey('scheduledDateTime')? (data['scheduledDateTime'] as Timestamp).toDate(): null;
     actionLink = data.containsKey('actionLink')? ActionLink._fromMap(data['actionLink']!): null;
     if (data.containsKey('tags')) tags.addAll((data['tags'] as List<dynamic>).map((e) => e as String));
     if (data.containsKey('links')) links.addAll((data['links'] as List<dynamic>).map((e) => Link(title: e['title']!, uri: e['uri']!)));
@@ -88,6 +90,7 @@ class Event {
 
       final instance = _cache[id] = Event._fromMap(data);
       instance.channel = data.containsKey('channel')? await Channel.load(data['channel']! as String): null;
+      instance.owner = (await User.load(data['owner']! as String))!;
       return instance;
     });
 
