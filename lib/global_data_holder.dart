@@ -1,5 +1,9 @@
+import 'package:flutter/material.dart';
+
 class GlobalDataHolder {
   GlobalDataHolder._();
+
+  ValueNotifier<ThemeMode> themeMode=ValueNotifier(ThemeMode.system);
 
   final Map<String, List<void Function()>> _simpleCallbacks = {};
 

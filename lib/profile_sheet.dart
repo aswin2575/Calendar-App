@@ -1,4 +1,6 @@
 import 'package:calendar_app/auth_page.dart';
+import 'package:calendar_app/global_data_holder.dart';
+import 'package:calendar_app/screen_admin_signup.dart';
 import 'package:calendar_app/server/server.dart';
 import 'package:flutter/material.dart';
 
@@ -15,22 +17,16 @@ class _ProfileSheetState extends State<ProfileSheet> {
   var editable=false;
   int? selectedIndex;
   final currentUser = Server.instance!.currentUser!;
-  bool light=true;
-  final ValueNotifier<int> _selectedValueNotifier = ValueNotifier<int>(1);
+  final themes=['System','Light','Dark'];
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    //final v= ThemeType.values[0];
-    final List<ThemeData> _themes = [
-    ThemeData.light(),
-    ThemeData.dark()];
-    //bool? _checked=false;
-    int tempSelectedValue = _selectedValueNotifier.value;
-    var widgets = lst.map((item) { return Text(item); } );
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final themeMode=GlobalDataHolder.instance.themeMode.value;
     return Column(
       //mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         SizedBox(height: 30,),
         Stack(
@@ -86,6 +82,27 @@ class _ProfileSheetState extends State<ProfileSheet> {
         SizedBox(
           height: 30,
         ),
+
+        if(!(currentUser.isAdmin&&currentUser.department==null))
+          Card.filled(
+            clipBehavior: Clip.hardEdge,
+            margin: const EdgeInsets.all(20.0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Column(
+                //mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Descriptor(title: currentUser.department!.name,subtitle: 'Department',),
+                  if (!currentUser.isAdmin && currentUser.admissionYear != null) Divider(),
+                  if (!currentUser.isAdmin && currentUser.admissionYear != null) Descriptor(title: '${currentUser.admissionYear}-${currentUser.admissionYear!+4}',subtitle: 'Admission Year',),
+                  if (!currentUser.isAdmin && currentUser.semester != null) Divider(),
+                  if (!currentUser.isAdmin && currentUser.semester != null) Descriptor(title: currentUser.semester!.toString(),subtitle: 'Semester',),
+                ],
+              ),
+            ),
+          ),
+        //
 
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: editable? 16: 0),
@@ -173,35 +190,6 @@ class _ProfileSheetState extends State<ProfileSheet> {
             ],
           ),
         ),
-        //
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 4),
-          child: Container(
-            child: Card.filled(
-              child: ListTile(title: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  //mainAxisAlignment: MainAxisAlignment.center,
-
-                  children: [
-                    // SizedBox(width: 20,),
-                    Column(crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [SizedBox(width: 150,),
-                        Text('Department\nSemester\nAdmission',style: TextStyle(fontWeight: FontWeight.bold),),
-                      ],),
-                    Column(crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text('CSE\nS6\n21BCS080'),
-                      ],),
-                    // SizedBox(width: 20,),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 8),
           child: Text('Settings',
@@ -226,62 +214,18 @@ class _ProfileSheetState extends State<ProfileSheet> {
             child: ListTile(
               leading: Icon(Icons.contrast),
               title: Text('Theme',style: TextStyle(fontSize: 16),),
+              subtitle: Text(themes[themeMode.index]),
               onTap: () {
-                tempSelectedValue=_selectedValueNotifier.value;
-                showDialog<String>(
-                context: context,
-                builder: (BuildContext context) => AlertDialog(
-                  title: const Text('Theme'),
-                  content: ValueListenableBuilder<int>(
-                    valueListenable: _selectedValueNotifier,
-                      builder: (context,selectedValue, child){
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          RadioListTile<int>(
-                            value: 1,
-                            groupValue: selectedValue,
-                            title: Text('Light'),
-                            onChanged: (int? value) {
-                              _selectedValueNotifier.value = value!;
-                            },
-                          ),
-                          RadioListTile<int>(
-                            value: 2,
-                            groupValue: selectedValue,
-                            title: Text('Dark'),
-                            onChanged: (int? value) {
-                              _selectedValueNotifier.value = value!;
-                            },
-                          ),
-                        ],
-                      );
-                      }
-                  ),
-                  actions: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed:(){
-                            _selectedValueNotifier.value=tempSelectedValue;
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: (){
-                            Navigator.of(context).pop();
-            
-                          },
-                          child: const Text('OK'),
-                        ),
-                      ],
-                    )
-            
-                  ],
-                ),
-              );},
+                showDialog<ThemeMode>(
+                  context: context,
+                  builder: (BuildContext context) => ThemeModeSelector(initialValue: themeMode,)
+                ).then((result) {
+                  if (result== null) return;
+                  setState(() {
+                    GlobalDataHolder.instance.themeMode.value=result;
+                  });
+                });
+              },
             ),
           ),
         )
@@ -290,16 +234,58 @@ class _ProfileSheetState extends State<ProfileSheet> {
   }
 }
 
-class ThemeTypeSelector extends StatefulWidget {
-  const ThemeTypeSelector({super.key});
-
+class ThemeModeSelector extends StatefulWidget {
+  const ThemeModeSelector({super.key, this.initialValue=ThemeMode.system});
+  final ThemeMode initialValue;
   @override
-  State<ThemeTypeSelector> createState() => _ThemeTypeSelectorState();
+  State<ThemeModeSelector> createState() => _ThemeModeSelectorState();
 }
 
-class _ThemeTypeSelectorState extends State<ThemeTypeSelector> {
+class _ThemeModeSelectorState extends State<ThemeModeSelector> {
+  final themes=['System','Light','Dark'];
+  late String selectedValue = themes[widget.initialValue.index];
+
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return AlertDialog(
+      title: const Text('Theme'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: themes.map((e){
+          return RadioListTile<String>(
+            value: e,
+            groupValue: selectedValue,
+            title: Text(e),
+            onChanged: (value) {
+              setState(() {
+                selectedValue = value!;
+              });
+            },
+          );
+        }).toList()
+      ),
+      actions: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TextButton(
+              onPressed:(){
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: (){
+                Navigator.of(context).pop(ThemeMode.values[themes.indexOf(selectedValue)]);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        )
+
+      ],
+    );
   }
 }
+
+

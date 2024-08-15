@@ -1,7 +1,7 @@
-import 'package:calendar_app/authen_check_page.dart';
+import 'package:calendar_app/screen_admin_error.dart';
+import 'package:calendar_app/screen_admin_signup.dart';
 import 'package:calendar_app/screen_home.dart';
 import 'package:calendar_app/server/server.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AuthPage extends StatefulWidget {
@@ -16,26 +16,7 @@ class _AuthPageState extends State<AuthPage> {
   late final Server server = Server.instance!;
 
   @override
-  void initState() {
-    super.initState();
-    // Server.initialize().then((_) {
-    //   server=Server.instance!;
-    //   setState(() {
-    //     loading=false;
-    //   });
-    // });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    // if(!loading && server.currentUser!=null){
-    //   Navigator.pushReplacement(
-    //     context,
-    //     MaterialPageRoute(builder: (context) => ScreenHome()),
-    //   );
-    // }
-    int a=1;
     return Scaffold(
       body: SafeArea(child:
       Column(
@@ -57,8 +38,8 @@ class _AuthPageState extends State<AuthPage> {
             padding: EdgeInsets.symmetric(vertical: 12,horizontal: 24),
             child: Column(
               children: [
-                Text('ASIET',style: TextStyle(fontSize: 32,fontWeight: FontWeight.bold),),
-                Text('Description:\nAdi Shankara Institute of Engineering & Technology was established at Kalady with the aim of providing value-added technical education with a flair of professional excellence and ethical values. The college is run by ADI SANKARA TRUST, a registered trust which has carved a niche in the educational sector by running Sree Sankara College, Sree Sarada School, Adi Sankara Training College, Sree Sarada Special School, DDU Kaushal Kendra all at Kalady.',textAlign: TextAlign.justify,),
+                Text('Welcome to ASIET TIMES',style: TextStyle(fontSize: 26,fontWeight: FontWeight.bold),),
+                Text("Stay updated with all the events at Adi Shankara Institute of Engineering and Technology, Kalady. From seminars to cultural activities, ASIET TIMES keeps you informed and engaged with everything happening on campus.",textAlign: TextAlign.justify,),
               ],
             ),
           ),
@@ -71,8 +52,8 @@ class _AuthPageState extends State<AuthPage> {
           });
           server.signIn(
             context: context,
-            signupBuilder: (context, user) => Scaffold(body: GestureDetector(child: Center(child: Text('Hey ${user.name}')), onTap: () => Navigator.of(context).pop(true),)),
-            signupErrorBuilder: (context) => Scaffold(body: const Center(child: Text('Oops you are unauthorized')))
+            signupBuilder: (context, user) => ScreenAdminSignup(user: user,),
+            signupErrorBuilder: (context) => ScreenAdminError()
           ).then((success){
             setState(() => loading=false);
 
@@ -86,8 +67,8 @@ class _AuthPageState extends State<AuthPage> {
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text('Sign-In Failed'),
-                    content: Text("We were unable to sign you in with Google. Please check your internet connection and try again. If the problem persists, contact support.",textAlign: TextAlign.justify,),
+                    title: Text('Access Denied'),
+                    content: Text("Please contact the administrative office to get access or verify your registration. Only students of ASIET are allowed to use this application.",textAlign: TextAlign.justify,),
                     actions: <Widget>[
                       TextButton(
                         onPressed: () {

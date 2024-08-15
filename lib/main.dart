@@ -1,6 +1,7 @@
 
-import 'package:calendar_app/authen_check_page.dart';
 import 'package:calendar_app/auth_page.dart';
+import 'package:calendar_app/global_data_holder.dart';
+import 'package:calendar_app/screen_channels.dart';
 import 'package:calendar_app/screen_home.dart';
 import 'package:calendar_app/server/server.dart';
 import 'package:calendar_app/theme.dart';
@@ -17,13 +18,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Hello",
-      theme: ThemeData(colorScheme: MaterialTheme.lightScheme(), useMaterial3: true),
-      darkTheme: ThemeData(colorScheme: MaterialTheme.darkScheme(), useMaterial3: true),
-      //home: const ScreenHome(),
-      home: Server.instance!.currentUser == null? const AuthPage(): const ScreenHome(),
-      //home: const authencheck(),
+    return ValueListenableBuilder(
+      builder: (BuildContext context, ThemeMode value, Widget? child)=> MaterialApp(
+        title: "Hello",
+        theme: ThemeData(colorScheme: MaterialTheme.lightScheme(), useMaterial3: true),
+        darkTheme: ThemeData(colorScheme: MaterialTheme.darkScheme(), useMaterial3: true),
+        themeMode: value,
+        //home: const ScreenHome(),
+        home: Server.instance!.currentUser == null? const AuthPage(): const ScreenHome(),
+        //home: const authencheck(),
+        //home: const ScreenChannels()
+      ), valueListenable: GlobalDataHolder.instance.themeMode,
     );
   }
 }

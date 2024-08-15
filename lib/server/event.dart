@@ -118,6 +118,6 @@ class ActionLink extends Link {
   ActionLink({required super.title, required super.uri, this.due});
 
   ActionLink._fromMap(Map<String, dynamic> data): super(title: data['title']! as String, uri: data['uri']! as String) {
-    due = data.containsKey('due')? data['due']! as DateTime: null;
+    due = data.containsKey('due')? (data['due']! as Timestamp).toDate(): null;
   }
 }

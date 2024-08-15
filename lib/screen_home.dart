@@ -24,7 +24,7 @@ class _ScreenHomeState extends State<ScreenHome> {
   final _pages = [
     const ScreenFeeds(),
     const ScreenEvents(),
-    const ScreenChannels(),
+    const ScreenHomeChannels(),
     if (Server.instance!.currentUser!.isAdmin) ScreenAdmin()
   ];
   final pageController = PageController(initialPage: 0);
@@ -62,13 +62,13 @@ class _ScreenHomeState extends State<ScreenHome> {
                           //backgroundImage: NetworkImage('https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1721577515~exp=1721581115~hmac=85c0c9ad76d5eed77a7cfb720b142a6969d87df5088a60b812503d560134b8a6&w=740'),
                           child: ClipOval(
                             child: FadeInImage.assetNetwork(
-                              placeholder: 'lib/images/aswin.png', // Local image
+                              placeholder: 'lib/images/profile.png', // Local image
                               image: currentUser.photoUrl, // Network image
                               fit: BoxFit.cover,
                               imageErrorBuilder: (context, error, stackTrace) {
                                 // Display the local image if network image fails
                                 return Image.asset(
-                                  'lib/images/aswin.png',
+                                  'lib/images/profile.png',
                                   fit: BoxFit.cover,
                                 );
                               },

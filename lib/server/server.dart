@@ -156,7 +156,7 @@ class Server {
           final route = MaterialPageRoute(builder: (context) => signupBuilder(context, User._fromMap(userData)));
           final success = await Navigator.of(context).push(route);
 
-          if (!success) {
+          if (!(success ?? false)) {
             await signOut();
             return false;
           }
@@ -209,5 +209,32 @@ class Server {
         .orderBy('scheduledDateTime');
 
     return Event.loadMultiple(query);
+  }
+
+  List<Event> dummy(){
+    final random = Random(0);
+    return List<Event>.generate(random.nextInt(30), (index) {
+      var event = Event._fromMap({
+        'id': index.toString(),
+        'title': 'Event $index',
+        'isInfo': false,
+        'description': 'Some description $index',
+        'location': 'ADP LAB',
+        'scheduledDateTime': Timestamp.fromDate(DateTime.now().add(Duration(days: random.nextInt(365), hours: random.nextInt(23)))),
+        'actionLink': {
+          'title': 'Register',
+          'uri': 'https://www.google.com',
+          'due': Timestamp.fromDate(DateTime.now().add(Duration(days: random.nextInt(365), hours: random.nextInt(23))))
+        },
+        'allDayEvent': false,
+        if (random.nextBool()) 'imageUrl':'https://fisat.ac.in/wp-content/uploads/2023/04/Nautilus.jpeg',
+      });
+      event.channel = null;
+      event.tags.addAll([ 'Arts', 'Sports' ]);
+      event.links.addAll([ Link(title: 'Google', uri: 'https://www.google.com') ]);
+      event.contacts.addAll([ Contact(name: 'Ansif', phone: '7025694703') ]);
+      return event;
+    });
+
   }
 }
